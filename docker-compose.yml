@@ -1,0 +1,31 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kraytour_db
+    environment:
+      POSTGRES_USER: kraytour
+      POSTGRES_PASSWORD: kraytour
+      POSTGRES_DB: kraytour
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  
+  backend:
+    build: ./backend
+    container_name: kraytour_backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://kraytour:kraytour@postgres:5432/kraytour
+      SECRET_KEY: your_secret_key_here
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 15
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
