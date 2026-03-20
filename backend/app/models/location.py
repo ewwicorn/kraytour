@@ -22,7 +22,7 @@ class Tag(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     slug = Column(String(100), unique=True, nullable=False, index=True)
     label_ru = Column(String(200), nullable=False)
-    group = Column(String(100), nullable=False)   # "season", "activity", "audience", etc.
+    group = Column(String(100), nullable=False)
     subgroup = Column(String(100), nullable=True)
 
 
