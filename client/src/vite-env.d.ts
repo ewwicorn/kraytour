@@ -1,15 +1,17 @@
 /// <reference types="vite/client" />
 
-// ======================
-// Типы для Yandex Maps API v3
-// ======================
-
 declare global {
   interface Window {
-    /** Глобальный объект Yandex Maps после загрузки скрипта */
-    ymaps3: typeof import('@yandex/ymaps3-types');
+    ymaps3: any;
   }
 }
 
-// Это нужно, чтобы файл считался модулем TypeScript
+interface ImportMetaEnv {
+  readonly VITE_YANDEX_MAPS_API_KEY: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
 export {};

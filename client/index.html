@@ -2,23 +2,22 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- <link rel="icon" type="image/svg+xml" href="/favicon.svg" /> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>client</title>
+    <title>Kraytour</title>
 
-    <script src="https://api-maps.yandex.ru/v3/?apikey=1eb660d0-acf8-4da4-9147-a4746d437647&lang=ru_RU"></script>
-
-    <script type="module" src="dist/index.js"></script>
-
-
+    <!-- Стили для UI-темы -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@yandex/ymaps3-default-ui-theme@latest/dist/ymaps3-default-ui-theme.css"
+    />
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- UI-тема подключается как обычный скрипт ПОСЛЕ основного API -->
+    <!-- Основной скрипт Яндекс Карт грузится динамически в компоненте -->
+    <!-- Поэтому грузим ui-theme тоже динамически в коде -->
+
     <script type="module" src="/src/main.tsx"></script>
-
-
-    <div id="map" style="width: 100%; height: 600px;"></div>
-
-
   </body>
 </html>
