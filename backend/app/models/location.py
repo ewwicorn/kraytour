@@ -65,5 +65,5 @@ class Location(Base):
     group_size_max = Column(Integer, nullable=True)
 
     # Relations
-    seller = relationship("User", foreign_keys=[seller_id])
+    seller = relationship("User", foreign_keys=[seller_id], lazy="selectin")
     tags = relationship("Tag", secondary=location_tag_association, lazy="selectin")
