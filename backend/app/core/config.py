@@ -1,6 +1,19 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import List
+
 
 class Settings(BaseSettings):
+    """Application configuration loaded from environment variables."""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+    APP_ENV: str = "development"
+
     DATABASE_URL: str
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
@@ -11,8 +24,16 @@ class Settings(BaseSettings):
     MINIO_SECRET_KEY: str = "minioadmin"
     MINIO_BUCKET_NAME: str = "kraytour"
     MINIO_SECURE: bool = False
-    
-    class Config:
-        env_file = ".env"
+
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:8080",
+        "https://kraytour.com",
+    ]
+
+    @property
+    def is_production(self) -> bool:
+        return self.APP_ENV == "production"
+
 
 settings = Settings()

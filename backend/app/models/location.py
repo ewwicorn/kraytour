@@ -6,8 +6,6 @@ from sqlalchemy.orm import relationship
 
 from app.db.base import Base
 
-
-# M2M: locations <-> tags
 location_tag_association = Table(
     "location_tags",
     Base.metadata,
@@ -17,6 +15,8 @@ location_tag_association = Table(
 
 
 class Tag(Base):
+    """Location category tag for filtering and organization."""
+
     __tablename__ = "tags"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -27,36 +27,25 @@ class Tag(Base):
 
 
 class Location(Base):
+    """Tourism location/attraction with pricing and availability details."""
+
     __tablename__ = "locations"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     slug = Column(String(150), unique=True, nullable=False, index=True)
-
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     short_description = Column(String(500), nullable=True)
-
-    # Geo
     lat = Column(Float, nullable=False)
     lng = Column(Float, nullable=False)
     address = Column(String(500), nullable=True)
     region = Column(String(100), nullable=True, default="Краснодарский край")
-
-    # Media — список URL-ов
     photos = Column(ARRAY(Text), nullable=False, default=list)
-
-    # Pricing
-    price_from = Column(Integer, nullable=True)   # в рублях
+    price_from = Column(Integer, nullable=True)
     price_to = Column(Integer, nullable=True)
-
-    # Status
-    is_active = Column(Boolean, default=False)    # False пока не одобрен модератором
-    is_featured = Column(Boolean, default=False)  # для промо-буста в выдаче
-
-    # Owner (seller)
+    is_active = Column(Boolean, default=False)
+    is_featured = Column(Boolean, default=False)
     seller_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-
-    # Numeric attributes для рекоменд. системы
     avg_temp_summer = Column(Float, nullable=True)
     avg_temp_winter = Column(Float, nullable=True)
     duration_hours_min = Column(Float, nullable=True)
@@ -64,6 +53,5 @@ class Location(Base):
     group_size_min = Column(Integer, nullable=True)
     group_size_max = Column(Integer, nullable=True)
 
-    # Relations
     seller = relationship("User", foreign_keys=[seller_id], lazy="selectin")
     tags = relationship("Tag", secondary=location_tag_association, lazy="selectin")

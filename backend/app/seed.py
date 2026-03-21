@@ -87,7 +87,6 @@ LOCATIONS = [
 
 async def seed():
     async with AsyncSessionLocal() as db:
-        # --- Tags ---
         tag_map: dict[str, Tag] = {}
         for t in TAGS:
             tag = Tag(id=uuid.uuid4(), **t)
@@ -96,12 +95,11 @@ async def seed():
 
         await db.flush()
 
-        # --- Locations ---
         for loc_data in LOCATIONS:
             tag_slugs = loc_data.pop("tag_slugs")
             location = Location(
                 id=uuid.uuid4(),
-                is_active=True,   # seed-данные сразу активны
+                is_active=True,
                 **loc_data,
             )
             location.tags = [tag_map[s] for s in tag_slugs]

@@ -1,32 +1,25 @@
-"""
-core/enums.py — все перечисления проекта.
+"""Enumeration types for user roles, entities, and content moderation."""
 
-Сгруппированы по смыслу: пользователи, модерация,
-бронирования, медиа, уведомления.
-"""
 import enum
 
-
-# ── Пользователи ──────────────────────────────────────────────────────────────
-
 class UserRole(str, enum.Enum):
+    """User account role in the system."""
+
     buyer  = "buyer"
     seller = "seller"
     admin  = "admin"
 
-
-# ── Контент и модерация ───────────────────────────────────────────────────────
-
 class EntityType(str, enum.Enum):
-    """Тип сущности: локация или событие."""
+    """Platform content entity types."""
+
     location = "location"
     event    = "event"
 
 
 class ModerationStatus(str, enum.Enum):
-    """
-    Жизненный цикл контента (локации, события, отзыва, баннера):
-    draft → pending → approved / rejected / edit_requested
+    """Content lifecycle status in moderation workflow.
+
+    States: draft → pending → approved/rejected/edit_requested
     """
     draft          = "draft"
     pending        = "pending"
@@ -34,44 +27,28 @@ class ModerationStatus(str, enum.Enum):
     rejected       = "rejected"
     edit_requested = "edit_requested"
 
-
-# ── Туры ──────────────────────────────────────────────────────────────────────
-
 class TourStatus(str, enum.Enum):
-    draft  = "draft"   # собирается в конструкторе
-    booked = "booked"  # все остановки забронированы
-
-
-# ── Бронирования и платежи ────────────────────────────────────────────────────
-
+    draft  = "draft"
+    booked = "booked"
+    
 class BookingStatus(str, enum.Enum):
-    pending   = "pending"    # создана, ожидает оплаты
-    confirmed = "confirmed"  # продавец подтвердил
-    completed = "completed"  # визит состоялся
-    cancelled = "cancelled"  # отменена
+    pending   = "pending"
+    confirmed = "confirmed"
+    completed = "completed"
+    cancelled = "cancelled"
 
 
 class PaymentStatus(str, enum.Enum):
-    pending   = "pending"    # создан, ожидает оплаты на стороне ЮKassa
-    succeeded = "succeeded"  # оплачен
-    cancelled = "cancelled"  # отменён
-    refunded  = "refunded"   # возврат выполнен
-
-
-# ── Медиа ─────────────────────────────────────────────────────────────────────
+    pending   = "pending"
+    succeeded = "succeeded"
+    cancelled = "cancelled"
+    refunded  = "refunded"
 
 class VideoStatus(str, enum.Enum):
-    """
-    Жизненный цикл генерации видео из фото:
-    pending → processing → done / error
-    """
-    pending    = "pending"     # задача создана, ещё не взята в работу
-    processing = "processing"  # генерация идёт
-    done       = "done"        # видео готово, object_name заполнен
-    error      = "error"       # ошибка, см. error_message
-
-
-# ── Уведомления ───────────────────────────────────────────────────────────────
+    pending    = "pending"
+    processing = "processing"
+    done       = "done"
+    error      = "error"
 
 class NotificationType(str, enum.Enum):
     booking_confirmed    = "booking_confirmed"

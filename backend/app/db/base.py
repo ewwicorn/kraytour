@@ -15,15 +15,15 @@ Base = declarative_base()
 
 
 class UUIDMixin:
-    """UUID первичный ключ — подключается ко всем моделям."""
+    """UUID primary key — connects to all models."""
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
 
 class TimestampMixin:
-    """Поле created_at — подключается туда, где нужна дата создания."""
+    """Field created_at — connects to models where creation date is needed."""
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class FullTimestampMixin(TimestampMixin):
-    """created_at + updated_at — для моделей, которые часто обновляются."""
+    """created_at + updated_at — for models that are frequently updated."""
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)

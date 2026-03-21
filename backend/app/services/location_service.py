@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from app.exceptions import LocationNotFoundError, LocationSlugAlreadyExistsError, LocationTagsNotFoundError
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
@@ -9,8 +10,7 @@ from app.schemas.location import LocationCreate, LocationUpdate
 
 
 class LocationService:
-
-    # ── Locations ─────────────────────────────────────────────────────────────
+    """Handle location CRUD operations and filtering."""
 
     async def get_list(
         self,
@@ -30,19 +30,16 @@ class LocationService:
         if region:
             q = q.where(Location.region == region)
         if price_max is not None:
-            q = q.where(Location.price_from <= price_max)
+            q = q.where(
+                (Location.price_from.is_(None)) | (Location.price_from <= price_max)
+            )
         if tag_slugs:
-            # локация должна иметь ВСЕ запрошенные теги
             for slug in tag_slugs:
-                q = q.where(
-                    Location.tags.any(Tag.slug == slug)
-                )
+                q = q.where(Location.tags.any(Tag.slug == slug))
 
-        # total
         count_q = select(func.count()).select_from(q.subquery())
         total = (await db.execute(count_q)).scalar_one()
 
-        # pagination
         q = q.offset((page - 1) * page_size).limit(page_size)
         result = await db.execute(q)
         items = result.scalars().all()
@@ -53,14 +50,14 @@ class LocationService:
         result = await db.execute(select(Location).where(Location.slug == slug))
         location = result.scalar_one_or_none()
         if not location:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Location not found")
+            raise LocationNotFoundError(location_id=slug)
         return location
 
     async def get_by_id(self, db: AsyncSession, location_id: UUID) -> Location:
         result = await db.execute(select(Location).where(Location.id == location_id))
         location = result.scalar_one_or_none()
         if not location:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Location not found")
+            raise LocationNotFoundError(location_id=location_id)
         return location
 
     async def create(
@@ -69,10 +66,11 @@ class LocationService:
         data: LocationCreate,
         seller_id: UUID | None = None,
     ) -> Location:
-        # проверка уникальности slug
-        existing = await db.execute(select(Location).where(Location.slug == data.slug))
+        existing = await db.execute(
+            select(Location).where(Location.slug == data.slug)
+        )
         if existing.scalar_one_or_none():
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Slug already exists")
+            raise LocationSlugAlreadyExistsError(slug=data.slug)
 
         tags = await self._resolve_tags(db, data.tag_ids)
 
@@ -95,11 +93,11 @@ class LocationService:
             duration_hours_max=data.duration_hours_max,
             group_size_min=data.group_size_min,
             group_size_max=data.group_size_max,
-            is_active=False,  # всегда draft при создании
+            is_active=False,
             tags=tags,
         )
         db.add(location)
-        await db.commit()
+        await db.flush()
         await db.refresh(location)
         return location
 
@@ -110,39 +108,51 @@ class LocationService:
         data: LocationUpdate,
     ) -> Location:
         update_data = data.model_dump(exclude_unset=True, exclude={"tag_ids"})
+
+        if "slug" in update_data and update_data["slug"] != location.slug:
+            existing = await db.execute(
+                select(Location).where(Location.slug == update_data["slug"])
+            )
+            if existing.scalar_one_or_none():
+                raise LocationSlugAlreadyExistsError(slug=update_data["slug"])
+
         for field, value in update_data.items():
             setattr(location, field, value)
 
         if data.tag_ids is not None:
             location.tags = await self._resolve_tags(db, data.tag_ids)
 
-        await db.commit()
+        await db.flush()
         await db.refresh(location)
         return location
 
-    async def set_active(self, db: AsyncSession, location: Location, is_active: bool) -> Location:
+    async def set_active(
+        self, db: AsyncSession, location: Location, is_active: bool
+    ) -> Location:
         location.is_active = is_active
-        await db.commit()
+        await db.flush()
         await db.refresh(location)
         return location
 
     async def delete(self, db: AsyncSession, location: Location) -> None:
         await db.delete(location)
-        await db.commit()
-
-    # ── Tags ──────────────────────────────────────────────────────────────────
+        await db.commit() #mb remove later
 
     async def get_all_tags(self, db: AsyncSession) -> list[Tag]:
-        result = await db.execute(select(Tag).order_by(Tag.group, Tag.label_ru))
+        result = await db.execute(
+            select(Tag).order_by(Tag.group, Tag.label_ru)
+        )
         return result.scalars().all()
 
-    async def _resolve_tags(self, db: AsyncSession, tag_ids: list[UUID]) -> list[Tag]:
+    async def _resolve_tags(
+        self, db: AsyncSession, tag_ids: list[UUID]
+    ) -> list[Tag]:
         if not tag_ids:
             return []
         result = await db.execute(select(Tag).where(Tag.id.in_(tag_ids)))
         tags = result.scalars().all()
         if len(tags) != len(tag_ids):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Some tag_ids not found")
+            raise LocationTagsNotFoundError(tag_ids=list(tag_ids))
         return list(tags)
 
 

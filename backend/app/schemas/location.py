@@ -2,10 +2,9 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from uuid import UUID
 
-
-# ── Tag ──────────────────────────────────────────────────────────────────────
-
 class TagOut(BaseModel):
+    """Location tag response schema."""
+
     id: UUID
     slug: str
     label_ru: str
@@ -15,10 +14,9 @@ class TagOut(BaseModel):
     class Config:
         from_attributes = True
 
-
-# ── Location ─────────────────────────────────────────────────────────────────
-
 class LocationCreate(BaseModel):
+    """Location creation request schema."""
+
     slug: str
     name: str
     description: Optional[str] = None
@@ -40,6 +38,8 @@ class LocationCreate(BaseModel):
 
 
 class LocationUpdate(BaseModel):
+    """Location update request schema."""
+
     name: Optional[str] = None
     description: Optional[str] = None
     short_description: Optional[str] = None
@@ -89,7 +89,6 @@ class LocationOut(BaseModel):
 
 
 class LocationDetail(LocationOut):
-    """Полная схема — для страницы локации"""
     description: Optional[str] = None
     avg_temp_summer: Optional[float] = None
     avg_temp_winter: Optional[float] = None
