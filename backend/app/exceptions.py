@@ -20,3 +20,9 @@ class LocationTagsNotFoundError(KraytourException):
     def __init__(self, tag_ids: list[int]):
         self.tag_ids = tag_ids
         super().__init__(f"Tags with IDs {tag_ids} not found.")
+        
+class PostNotFoundError(KraytourException):
+    """Raised when a requested post is not found in the database."""
+    def __init__(self, post_id):
+        self.post_id = post_id
+        super().__init__(f"Post with ID {post_id} not found.")
