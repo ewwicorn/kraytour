@@ -1,0 +1,1958 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Краевед</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,400;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#F5EFE6;color:#1C1410;overflow-x:hidden}
+:root{
+  --bg:#F5EFE6;--dark:#1C1410;--cream:#FAF6F0;
+  --terra:#C4603B;--tl:#E8855F;--ochre:#D4A853;--sage:#7A8C6E;
+  --muted:#7A6E65;--light:#B8A99A;--border:rgba(28,20,16,.1);--card:#FFFDF9;
+  --s1:0 2px 8px rgba(28,20,16,.08);--s2:0 8px 32px rgba(28,20,16,.12);--s3:0 24px 64px rgba(28,20,16,.18);
+  --r:16px;--rs:8px;
+}
+h1,h2,h3,h4{font-family:'Fraunces',serif;font-weight:600;line-height:1.1}
+h1{font-size:clamp(2.8rem,8vw,6rem)}h2{font-size:clamp(2rem,5vw,3.5rem)}h3{font-size:clamp(1.3rem,3vw,1.8rem)}
+.page{display:none;min-height:100vh}.page.on{display:block}
+#pg-auth.on{display:grid;grid-template-columns:1fr 1fr}
+
+/* NAV */
+.nb{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:13px 30px;background:rgba(245,239,230,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transition:all .3s}
+.nb.dk{background:rgba(28,20,16,.88);border-color:rgba(255,255,255,.07)}
+.nb.dk .logo,.nb.dk .nav-nm{color:var(--cream)}
+.nb.dk .nlink{color:rgba(255,255,255,.55)}.nb.dk .nlink:hover{color:#fff}
+.logo{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:600;color:var(--dark);cursor:pointer;letter-spacing:.01em}
+.logo em{font-style:normal;color:var(--terra)}
+.nlinks{display:flex;gap:26px;align-items:center}
+.nlink{font-size:.8rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:color .2s}.nlink:hover{color:var(--terra)}
+.nav-user{display:flex;align-items:center;gap:9px}
+.nav-av{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--terra);cursor:pointer}
+.nav-nm{font-size:.8rem;font-weight:600;cursor:pointer;color:var(--dark)}
+.btn-nav{background:var(--terra);color:#fff;border:none;border-radius:100px;padding:7px 18px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-nav:hover{background:var(--tl);transform:translateY(-1px)}
+
+/* BUTTONS */
+.bp{display:inline-flex;align-items:center;gap:7px;background:var(--terra);color:#fff;border:none;border-radius:100px;padding:12px 26px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:600;cursor:pointer;transition:all .25s;text-decoration:none}
+.bp:hover{background:var(--tl);transform:translateY(-2px);box-shadow:0 8px 24px rgba(196,96,59,.35)}
+.bs{display:inline-flex;align-items:center;gap:7px;background:transparent;color:var(--dark);border:1.5px solid var(--border);border-radius:100px;padding:11px 22px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:500;cursor:pointer;transition:all .25s;text-decoration:none}
+.bs:hover{border-color:var(--terra);color:var(--terra)}
+.bfull{width:100%;justify-content:center}
+
+/* PILLS */
+.pill{display:inline-block;background:rgba(196,96,59,.1);color:var(--terra);border-radius:100px;padding:3px 10px;font-size:.71rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.pill.dk{background:rgba(28,20,16,.07);color:var(--muted)}
+.pf{display:inline-block;background:rgba(28,20,16,.06);color:var(--muted);border-radius:100px;padding:7px 15px;font-size:.79rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;border:1.5px solid transparent}
+.pf.on,.pf:hover{background:var(--terra);color:#fff;border-color:var(--terra)}
+.pt{display:inline-block;background:rgba(28,20,16,.06);color:var(--muted);border-radius:100px;padding:9px 17px;font-size:.84rem;font-weight:600;cursor:pointer;transition:all .2s;border:1.5px solid transparent;user-select:none}
+.pt.on{background:var(--dark);color:var(--cream);border-color:var(--dark)}
+.pc{display:inline-block;background:rgba(28,20,16,.06);color:var(--muted);border-radius:100px;padding:7px 13px;font-size:.79rem;font-weight:500;cursor:pointer;transition:all .2s;border:1.5px solid transparent}
+.pc.on{background:rgba(196,96,59,.12);color:var(--terra);border-color:rgba(196,96,59,.3)}
+
+/* TOAST */
+.toasts{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:7px;align-items:center;pointer-events:none}
+.toast{background:var(--dark);color:var(--cream);border-radius:100px;padding:8px 20px;font-size:.84rem;font-weight:500;white-space:nowrap;animation:tI .3s ease,tO .3s 2.2s ease forwards}
+@keyframes tI{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tO{to{opacity:0;transform:translateY(7px)}}
+@keyframes fU{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes dp{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+
+
+
+/* LOADER */
+.loader{position:fixed;inset:0;z-index:9990;background:rgba(28,20,16,.97);display:none;flex-direction:column;align-items:center;justify-content:center;gap:26px}
+.loader.on{display:flex}
+.lring{width:68px;height:68px;border-radius:50%;border:3px solid rgba(255,255,255,.1);border-top-color:var(--terra);animation:spin 1s linear infinite}
+.ltxt{font-family:'Fraunces',serif;font-style:italic;font-size:1.35rem;color:rgba(255,255,255,.78);text-align:center;max-width:280px;line-height:1.4}
+.ldots{display:flex;gap:7px}.ldots span{width:7px;height:7px;border-radius:50%;background:var(--terra);opacity:.3;animation:dp 1.2s ease infinite}
+.ldots span:nth-child(2){animation-delay:.2s}.ldots span:nth-child(3){animation-delay:.4s}
+
+/* MODAL */
+.modal{position:fixed;inset:0;z-index:9800;display:none;align-items:center;justify-content:center;padding:18px}
+.modal.on{display:flex}
+.mbg{position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(5px)}
+
+/* ── LANDING ── */
+#pg-landing{background:var(--dark)}
+.hero{position:relative;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 24px;overflow:hidden}
+.hbg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1559825481-12a05cc00344?w=1600&q=80') center/cover;filter:brightness(.38)}
+.hov{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(28,20,16,.1) 0%,rgba(28,20,16,.05) 40%,rgba(28,20,16,.82) 100%)}
+.hc{position:relative;z-index:2;max-width:820px}
+.hbadge{display:inline-block;background:rgba(196,96,59,.88);color:#fff;border-radius:100px;padding:5px 16px;font-size:.74rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:22px;animation:fU .6s ease both}
+.hero h1{color:#fff;margin-bottom:16px;font-style:italic;font-weight:500;animation:fU .6s .15s ease both}
+.hero h1 em{font-style:normal;color:var(--ochre)}
+.hsub{color:rgba(255,255,255,.68);font-size:1.05rem;font-weight:300;margin-bottom:40px;line-height:1.6;animation:fU .6s .3s ease both}
+.hcta{animation:fU .6s .45s ease both}
+.hscroll{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;color:rgba(255,255,255,.32);font-size:.71rem;letter-spacing:.1em;text-transform:uppercase;z-index:2}
+.hscroll i{width:1px;height:30px;background:rgba(255,255,255,.2);display:block}
+.how-s{background:var(--bg);padding:84px 32px}
+.ey{font-size:.74rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--terra);margin-bottom:9px}
+.how-hd{text-align:center;margin-bottom:52px}.how-hd p{color:var(--muted);font-size:.97rem;margin-top:9px}
+.how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;max-width:920px;margin:0 auto}
+.how-card{background:var(--card);border-radius:var(--r);padding:30px 26px;position:relative;overflow:hidden;box-shadow:var(--s1);transition:transform .3s,box-shadow .3s}
+.how-card:hover{transform:translateY(-3px);box-shadow:var(--s2)}
+.how-n{font-family:'Fraunces',serif;font-size:4rem;font-weight:600;color:rgba(196,96,59,.07);position:absolute;top:8px;right:14px}
+.how-card h3{font-size:1.2rem;margin-bottom:7px}
+.how-card p{color:var(--muted);font-size:.86rem;line-height:1.6}
+.prev-s{background:var(--cream);padding:68px 32px}
+.prev-s .ey,.prev-s>h2,.prev-s>.sub{text-align:center}
+.prev-s>.sub{color:var(--muted);margin-bottom:40px;font-size:.9rem}
+.prev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:860px;margin:0 auto 32px}
+.pcard{border-radius:var(--r);overflow:hidden;background:var(--card);box-shadow:var(--s1);cursor:pointer;transition:transform .3s}
+.pcard:hover{transform:translateY(-3px)}.pcard img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}
+.pcard-i{padding:10px 12px}.pcard-i strong{font-size:.84rem;font-weight:600;display:block;margin-bottom:3px}
+.cta-s{background:var(--dark);padding:92px 32px;text-align:center;position:relative;overflow:hidden}
+.cta-s::before{content:'';position:absolute;top:-70px;left:50%;transform:translateX(-50%);width:520px;height:520px;background:radial-gradient(circle,rgba(196,96,59,.14),transparent 70%);pointer-events:none}
+.cta-s h2{color:var(--cream);font-style:italic;margin-bottom:13px}
+.cta-s p{color:rgba(255,255,255,.43);font-size:.97rem;margin-bottom:32px}
+.foot{background:var(--dark);padding:26px 30px;border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.flogo{font-family:'Fraunces',serif;font-size:1.15rem;color:var(--cream)}.flogo em{font-style:normal;color:var(--terra)}
+.ftxt{color:rgba(255,255,255,.26);font-size:.78rem}
+
+/* ── AUTH ── */
+.auth-vis{background:url('https://images.unsplash.com/photo-1567108595835-c5c01bfb38c3?w=1200&q=80') center/cover;position:relative;min-height:100vh}
+.auth-vov{position:absolute;inset:0;background:linear-gradient(135deg,rgba(196,96,59,.68),rgba(28,20,16,.86));display:flex;flex-direction:column;align-items:center;justify-content:center;padding:44px;text-align:center}
+.auth-vis h2{color:#fff;font-style:italic;margin-bottom:9px}
+.auth-vis p{color:rgba(255,255,255,.62);font-size:.9rem;line-height:1.6}
+.auth-side{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 40px}
+.auth-wrap{width:100%;max-width:360px}
+.auth-tabs{display:flex;background:rgba(28,20,16,.06);border-radius:100px;padding:3px;margin-bottom:28px}
+.auth-tab{flex:1;text-align:center;padding:8px 12px;font-size:.84rem;font-weight:600;border-radius:100px;cursor:pointer;transition:all .2s;color:var(--muted)}
+.auth-tab.on{background:var(--dark);color:var(--cream)}
+.auth-wrap h2{margin-bottom:5px;font-size:1.9rem}
+.asub{color:var(--muted);font-size:.86rem;margin-bottom:24px}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:.76rem;font-weight:600;margin-bottom:4px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.fi{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:var(--rs);padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:.91rem;color:var(--dark);outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--terra)}.fi.err{border-color:#E53E3E}.fi.ok{border-color:var(--sage)}
+.aerr{background:rgba(229,62,62,.07);color:#C53030;border:1px solid rgba(229,62,62,.18);border-radius:var(--rs);padding:9px 13px;font-size:.82rem;margin-bottom:12px;display:none}
+.aerr.on{display:block}
+.aok{background:rgba(122,140,110,.09);color:#2F6335;border:1px solid rgba(122,140,110,.22);border-radius:var(--rs);padding:9px 13px;font-size:.82rem;margin-bottom:12px;display:none}
+.aok.on{display:block}
+.btn-vk{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:#0077FF;color:#fff;border:none;border-radius:var(--rs);padding:10px;font-family:'DM Sans',sans-serif;font-size:.86rem;font-weight:600;cursor:pointer;transition:all .2s;margin-bottom:16px}
+.btn-vk:hover{background:#0065DD}
+.auth-or{text-align:center;color:var(--light);font-size:.78rem;margin:14px 0;position:relative}
+.auth-or::before,.auth-or::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:var(--border)}
+.auth-or::before{left:0}.auth-or::after{right:0}
+.auth-sw{text-align:center;font-size:.81rem;color:var(--muted);margin-top:16px}
+.auth-sw a{color:var(--terra);cursor:pointer;font-weight:600}
+.btn-auth{width:100%;justify-content:center;border-radius:var(--rs);padding:11px;font-size:.93rem;position:relative}
+.btn-auth .spi{width:17px;height:17px;border-radius:50%;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin .7s linear infinite;display:none}
+.btn-auth.loading .spi{display:block}.btn-auth.loading .albl{display:none}
+
+/* ── ONBOARDING ── */
+#pg-ob{background:var(--dark);min-height:100vh;padding-bottom:56px}
+.ob-hd{text-align:center;padding:72px 24px 28px}
+.ob-prog{width:250px;height:3px;background:rgba(255,255,255,.1);border-radius:100px;margin:0 auto 9px;overflow:hidden}
+.ob-bar{height:100%;background:var(--terra);border-radius:100px;transition:width .4s ease}
+.ob-lbl{font-size:.71rem;color:rgba(255,255,255,.26);letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px}
+.ob-q{font-family:'Fraunces',serif;font-style:italic;font-size:clamp(1.6rem,4vw,2.3rem);font-weight:500;color:var(--cream);margin-bottom:5px}
+.ob-hint{color:rgba(255,255,255,.36);font-size:.83rem}
+.ob-cards{display:flex;gap:16px;justify-content:center;padding:0 22px;max-width:720px;margin:0 auto}
+.ob-card{flex:1;max-width:320px;border-radius:18px;overflow:hidden;cursor:pointer;position:relative;aspect-ratio:3/4;transition:transform .25s,box-shadow .25s;box-shadow:0 13px 34px rgba(0,0,0,.38)}
+.ob-card:hover{transform:translateY(-5px) scale(1.01)}
+.ob-card.sel{outline:3px solid var(--terra);box-shadow:0 0 0 6px rgba(196,96,59,.26);transform:scale(.97)}
+.ob-card img{width:100%;height:100%;object-fit:cover;display:block}
+.ob-cov{position:absolute;inset:0;background:linear-gradient(to top,rgba(28,20,16,.88),transparent 52%);display:flex;flex-direction:column;justify-content:flex-end;padding:20px}
+.ob-clbl{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:600;font-style:italic;color:#fff;margin-bottom:3px}
+.ob-csub{font-size:.76rem;color:rgba(255,255,255,.56)}
+.ob-chk{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;background:var(--terra);color:#fff;display:none;align-items:center;justify-content:center;font-size:.95rem;font-weight:700}
+.ob-card.sel .ob-chk{display:flex}
+.ob-qs{max-width:460px;margin:0 auto;padding:8px 22px 36px}
+.qb{margin-bottom:26px}
+.ql{font-size:.71rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:9px}
+.qr{display:flex;gap:7px;flex-wrap:wrap}
+.qr .pt{background:rgba(255,255,255,.08);color:rgba(255,255,255,.66);border-color:rgba(255,255,255,.1)}
+.qr .pt.on{background:var(--terra);color:#fff;border-color:var(--terra)}
+.rng{-webkit-appearance:none;width:100%;height:4px;background:rgba(255,255,255,.15);border-radius:2px;outline:none;cursor:pointer}
+.rng::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--terra);cursor:pointer}
+.rng-v{text-align:right;margin-top:6px;font-size:.86rem;font-weight:600;color:var(--ochre)}
+
+/* ── FEED ── */
+#pg-feed{background:var(--bg);padding-top:60px}
+.ffilters{position:sticky;top:60px;z-index:90;background:rgba(245,239,230,.95);backdrop-filter:blur(12px);padding:9px 20px;border-bottom:1px solid var(--border);display:flex;gap:7px;overflow-x:auto;scrollbar-width:none}
+.ffilters::-webkit-scrollbar{display:none}
+.masonry{column-count:4;column-gap:14px;padding:20px}
+
+.mc{break-inside:avoid;margin-bottom:14px;background:var(--card);border-radius:var(--r);overflow:hidden;cursor:pointer;box-shadow:var(--s1);transition:transform .3s,box-shadow .3s;position:relative}
+.mc:hover{transform:translateY(-3px);box-shadow:var(--s2)}
+.mc img{width:100%;display:block;object-fit:cover;}
+
+.mci{padding:10px 12px 12px}
+.mct{font-size:.86rem;font-weight:700;margin-bottom:5px;line-height:1.3}
+.mca{display:flex;align-items:center;gap:5px;font-size:.74rem;color:var(--muted)}
+.mca img{width:20px;height:20px;border-radius:50%;object-fit:cover}
+.csave{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.86);backdrop-filter:blur(4px);border:none;cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.csave.sv{background:var(--terra);color:#fff}
+.smart-b{background:linear-gradient(135deg,var(--terra),#8B3A20);border-radius:var(--r);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;break-inside:avoid;cursor:default}
+.sbt{color:#fff}.sbt strong{display:block;font-size:.88rem;margin-bottom:2px}.sbt span{font-size:.74rem;opacity:.78}
+.sbtn{background:rgba(255,255,255,.18);color:#fff;border:1.5px solid rgba(255,255,255,.36);border-radius:100px;padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:600;cursor:pointer;flex-shrink:0}
+.sbtn:hover{background:rgba(255,255,255,.3)}
+.fab{position:fixed;bottom:70px;right:18px;z-index:80;width:54px;height:54px;border-radius:50%;background:var(--terra);color:#fff;border:none;cursor:pointer;box-shadow:0 8px 22px rgba(196,96,59,.44);display:flex;align-items:center;justify-content:center;transition:all .25s;font-family:'Fraunces',serif;font-size:1.3rem;letter-spacing:0}
+.fab:hover{transform:scale(1.08)}
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(255,253,249,.95);backdrop-filter:blur(18px);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding:6px 0 10px}
+.bni{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 12px;cursor:pointer;color:var(--light);font-size:.63rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;transition:color .2s}
+.bni.on{color:var(--terra)}.bni svg{width:19px;height:19px}
+.lmore{text-align:center;padding:18px 0 88px}
+.lmbtn{background:transparent;border:1.5px solid var(--border);color:var(--muted);border-radius:100px;padding:9px 26px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;cursor:pointer;transition:all .2s}
+.lmbtn:hover{border-color:var(--terra);color:var(--terra)}
+
+/* ── POST MODAL ── */
+.pm-inner{position:relative;z-index:1;background:var(--card);border-radius:20px;width:100%;max-width:820px;max-height:90vh;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;box-shadow:var(--s3)}
+.pm-gal{position:relative;background:#111;min-height:360px}
+.pm-gal img{width:100%;height:100%;object-fit:cover;display:block}
+.pm-arr{position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.16);backdrop-filter:blur(4px);border:none;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pm-arr:hover{background:rgba(255,255,255,.34)}.pm-arr.l{left:9px}.pm-arr.r{right:9px}
+.pm-dots{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);display:flex;gap:5px}
+.pm-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.38);cursor:pointer;transition:all .2s}.pm-dot.on{background:#fff;width:15px;border-radius:2.5px}
+.pm-vbtn{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.44);color:#fff;border:1.5px solid rgba(255,255,255,.26);border-radius:100px;padding:4px 12px;font-family:'DM Sans',sans-serif;font-size:.71rem;font-weight:600;cursor:pointer;backdrop-filter:blur(4px)}
+.pm-vbtn:hover{background:rgba(196,96,59,.78);border-color:var(--terra)}
+.pm-info{padding:26px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:13px}
+.pm-x{position:absolute;top:11px;right:11px;z-index:10;width:32px;height:32px;border-radius:50%;background:rgba(28,20,16,.07);border:none;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pm-x:hover{background:rgba(28,20,16,.13)}
+.pm-ttl{font-family:'Fraunces',serif;font-size:1.65rem;font-weight:600;color:var(--dark);line-height:1.1}
+.pm-tp{font-size:.76rem;color:var(--muted);margin-top:2px}
+.pm-tags{display:flex;gap:5px;flex-wrap:wrap}
+.pm-desc{font-size:.86rem;color:var(--muted);line-height:1.65}
+.pm-auth{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--border)}
+.pm-auth img{width:32px;height:32px;border-radius:50%;object-fit:cover}
+.pm-an{font-size:.84rem;font-weight:600}.pm-at{font-size:.71rem;color:var(--muted)}
+.pm-acts{display:flex;gap:8px;margin-top:auto}
+.pm-acts .bp{flex:2;font-size:.83rem;padding:9px 12px}
+.pm-acts .bs{flex:1;font-size:.78rem;padding:8px 10px}
+
+/* ── MAP PAGE ── */
+#pg-map{background:var(--bg);padding-top:60px;min-height:100vh}
+.map-wrap{height:calc(100vh - 60px);position:relative}
+#map-full{width:100%;height:100%}
+.map-leg{position:absolute;top:14px;left:14px;z-index:10;background:rgba(255,253,249,.96);backdrop-filter:blur(8px);border-radius:var(--r);padding:12px 15px;box-shadow:var(--s2);max-width:190px}
+.map-leg h3{font-size:.96rem;margin-bottom:4px}
+.map-leg p{font-size:.74rem;color:var(--muted);line-height:1.5}
+
+/* ── PLACES ── */
+#pg-places{background:var(--bg);padding-top:60px;min-height:100vh}
+.pw{max-width:860px;margin:0 auto;padding:28px 22px 110px}
+.pw-hd{margin-bottom:22px}.pw-hd h2{font-size:2.1rem;margin-bottom:4px}
+.pw-hd p{color:var(--muted);font-size:.88rem}
+.empty{text-align:center;padding:60px 24px;color:var(--muted)}
+.empty .ico{font-size:2.8rem;margin-bottom:11px;font-family:'Fraunces',serif;font-style:italic;color:var(--terra)}
+.empty p{font-size:.88rem;line-height:1.6}
+.prow{display:flex;gap:13px;background:var(--card);border-radius:var(--r);overflow:hidden;box-shadow:var(--s1);margin-bottom:13px;cursor:pointer;transition:all .22s}
+.prow:hover{box-shadow:var(--s2);transform:translateY(-2px)}
+.prow img{width:88px;flex-shrink:0;object-fit:cover}
+.prow-i{padding:13px 14px 13px 0;flex:1;min-width:0}
+.pr-nm{font-size:.93rem;font-weight:700;margin-bottom:3px}
+.pr-tp{font-size:.74rem;color:var(--muted);margin-bottom:6px}
+.pr-tgs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:7px}
+.pr-acts{display:flex;gap:7px;flex-wrap:wrap}
+.pr-rm{background:transparent;border:1.5px solid var(--border);border-radius:100px;padding:4px 11px;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s}
+.pr-rm:hover{border-color:#E53E3E;color:#E53E3E}
+
+/* ── PROFILE ── */
+#pg-profile{background:var(--bg);padding-top:60px;min-height:100vh}
+.prw{max-width:840px;margin:0 auto;padding:28px 22px 110px}
+.pr-hero{background:var(--card);border-radius:var(--r);padding:26px;display:flex;gap:20px;align-items:flex-start;box-shadow:var(--s1);margin-bottom:20px}
+.pr-av{position:relative}
+.pr-av img{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--terra)}
+.pr-av-e{position:absolute;bottom:0;right:0;width:22px;height:22px;border-radius:50%;background:var(--terra);color:#fff;border:2px solid #fff;font-size:.64rem;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.pr-info{flex:1}
+.pr-name{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:600;margin-bottom:3px}
+.pr-email{font-size:.79rem;color:var(--muted);margin-bottom:10px}
+.pr-ptags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.pr-btns{display:flex;gap:8px;flex-wrap:wrap}
+.pr-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.stat{background:var(--card);border-radius:var(--r);padding:16px;text-align:center;box-shadow:var(--s1)}
+.stat-n{font-family:'Fraunces',serif;font-size:2rem;font-weight:600;color:var(--terra)}
+.stat-l{font-size:.73rem;color:var(--muted);font-weight:500}
+.pr-sec{margin-bottom:24px}
+.pr-sec-hd{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:11px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.vg{display:flex;gap:6px;flex-wrap:wrap}
+.vp{display:flex;align-items:center;gap:6px;background:var(--card);border-radius:100px;padding:5px 12px;font-size:.79rem;font-weight:500;box-shadow:var(--s1)}
+.vbar{width:46px;height:4px;border-radius:100px;background:rgba(28,20,16,.08);overflow:hidden}
+.vfill{height:100%;background:var(--terra);border-radius:100px}
+.thr{display:flex;gap:10px;background:var(--card);border-radius:var(--rs);overflow:hidden;box-shadow:var(--s1);cursor:pointer;transition:all .2s;margin-bottom:8px}
+.thr:hover{box-shadow:var(--s2)}.thr img{width:65px;object-fit:cover;flex-shrink:0}
+.thr-i{padding:10px 12px 10px 0;flex:1}
+.thr-t{font-size:.86rem;font-weight:700;margin-bottom:2px}.thr-m{font-size:.72rem;color:var(--muted)}
+.edit-form{background:var(--card);border-radius:var(--r);padding:20px;box-shadow:var(--s1);margin-bottom:20px;display:none}
+.edit-form.on{display:block}
+
+/* ── TOUR FORM ── */
+#pg-tour-new{background:var(--bg);padding:92px 22px 76px;min-height:100vh}
+.tf-w{max-width:555px;margin:0 auto}
+.tf-hd{margin-bottom:32px}.tf-hd h2{margin-bottom:5px}.tf-hd p{color:var(--muted);font-size:.88rem}
+.fs{margin-bottom:26px}
+.fsl{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+.date-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.dsub{font-size:.72rem;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:3px}
+input[type=date]{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:var(--rs);padding:10px 13px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--dark);outline:none;transition:border-color .2s}
+input[type=date]:focus{border-color:var(--terra)}
+.tcc{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.tcard{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:18px;cursor:pointer;transition:all .2s;text-align:center}
+.tcard.on{border-color:var(--terra);background:rgba(196,96,59,.05)}
+.tcard-ico{font-size:1.5rem;margin-bottom:6px;font-family:'Fraunces',serif;font-weight:600;color:var(--terra)}
+.tcard-lbl{font-size:.84rem;font-weight:600}
+.cwrap{display:flex;gap:7px;flex-wrap:wrap}
+.btrack{position:relative;height:4px;background:rgba(28,20,16,.12);border-radius:2px;margin:9px 0}
+.bfill{position:absolute;left:0;top:0;height:100%;background:var(--terra);border-radius:2px;pointer-events:none}
+.bsli{position:absolute;left:0;top:50%;transform:translateY(-50%);width:100%;-webkit-appearance:none;appearance:none;height:4px;background:transparent;outline:none;cursor:pointer;margin:0}
+.bsli::-webkit-slider-thumb{-webkit-appearance:none;width:21px;height:21px;border-radius:50%;background:var(--terra);border:2.5px solid #fff;box-shadow:0 2px 8px rgba(196,96,59,.33);cursor:pointer}
+.blbls{display:flex;justify-content:space-between;font-size:.74rem;color:var(--muted)}
+.bcur{text-align:center;font-size:1rem;font-weight:700;color:var(--terra);margin-top:4px}
+.sp-block{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:14px}
+.sp-block label{display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;font-size:.88rem;margin-bottom:8px}
+input[type=checkbox]{accent-color:var(--terra);width:16px;height:16px;cursor:pointer}
+.sp-prev{display:flex;gap:6px;flex-wrap:wrap}
+.sp-chip{display:flex;align-items:center;gap:5px;background:rgba(28,20,16,.05);border-radius:100px;padding:3px 10px 3px 3px;font-size:.76rem;font-weight:500}
+.sp-chip img{width:21px;height:21px;border-radius:50%;object-fit:cover}
+.gen-btn{width:100%;background:var(--dark);color:var(--cream);border:none;border-radius:var(--r);padding:16px;font-family:'DM Sans',sans-serif;font-size:.96rem;font-weight:700;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:28px;letter-spacing:.02em}
+.gen-btn:hover{background:#2E2018;transform:translateY(-2px);box-shadow:var(--s2)}
+.gen-btn.loading{background:var(--muted);pointer-events:none}
+
+/* Transport mode indicator in tour */
+.transport-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(196,96,59,.08);border-radius:100px;padding:5px 12px;font-size:.76rem;font-weight:600;color:var(--terra);margin-bottom:14px}
+
+/* ── TOUR RESULT ── */
+#pg-tour-result{background:var(--bg);padding-top:60px;min-height:100vh}
+.tsplit{display:grid;grid-template-columns:400px 1fr;height:calc(100vh - 60px)}
+.tlist{overflow-y:auto;padding:20px 18px 170px;border-right:1px solid var(--border)}
+.tmap{position:sticky;top:60px;height:calc(100vh - 60px)}
+#ymap{width:100%;height:100%}
+.ttitle{font-family:'Fraunces',serif;font-style:italic;font-size:1.72rem;font-weight:600;color:var(--dark);margin-bottom:4px}
+.tmeta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:11px}
+.tmi{font-size:.78rem;color:var(--muted);font-weight:500}
+.wstrip{display:flex;gap:6px;overflow-x:auto;padding:9px 12px;background:var(--cream);border-radius:var(--rs);margin-bottom:16px}
+.wday{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:46px;font-size:.71rem;color:var(--muted)}
+.wday .wt{font-size:.86rem;font-weight:700;color:var(--dark)}
+.dlbl{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:15px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.tpc{background:var(--card);border-radius:var(--r);overflow:hidden;margin-bottom:12px;box-shadow:var(--s1);transition:box-shadow .2s}
+.tpc:hover{box-shadow:var(--s2)}
+.tpc-img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;cursor:pointer;transition:opacity .2s}
+.tpc-img:hover{opacity:.88}
+.tpc-b{padding:12px 14px}
+.tpc-nm{font-size:.93rem;font-weight:700;margin-bottom:2px}
+.tpc-tp{font-size:.71rem;color:var(--muted);margin-bottom:6px}
+.tpc-tgs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:7px}
+.tpc-why{font-size:.8rem;color:var(--muted);font-style:italic;line-height:1.55;margin-bottom:8px;padding-left:8px;border-left:2px solid var(--terra)}
+.tpc-time{display:flex;gap:12px;font-size:.74rem;color:var(--muted);margin-bottom:10px}
+.tpc-acts{display:flex;gap:6px}
+.bswap{display:flex;align-items:center;gap:4px;background:rgba(28,20,16,.05);border:1.5px solid var(--border);border-radius:100px;padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s}
+.bswap:hover{border-color:var(--terra);color:var(--terra)}
+.bvid{display:flex;align-items:center;gap:4px;background:var(--dark);border:none;border-radius:100px;padding:6px 13px;font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:600;color:var(--cream);cursor:pointer;transition:all .2s;flex:1;justify-content:center}
+.bvid:hover{background:#2E2018}
+.hotels-b{margin-top:20px;background:var(--cream);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.hotels-b h3{font-size:1.1rem;margin-bottom:12px;font-family:'Fraunces',serif}
+.hcard{display:flex;gap:10px;background:var(--card);border-radius:var(--rs);overflow:hidden;margin-bottom:8px;text-decoration:none;color:inherit;transition:box-shadow .2s}
+.hcard:hover{box-shadow:var(--s1)}.hcard img{width:72px;aspect-ratio:1;object-fit:cover;flex-shrink:0}
+.hcard-i{padding:8px 9px 8px 0;flex:1;min-width:0}
+.hcard-nm{font-size:.84rem;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hcard-p{font-size:.76rem;color:var(--terra);font-weight:600}.hcard-r{font-size:.71rem;color:var(--muted)}
+.sbar{position:fixed;bottom:0;left:0;right:0;z-index:90;background:rgba(255,253,249,.97);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;gap:8px;padding:10px 16px 14px}
+.sbar .bp{flex:2;font-size:.84rem;padding:10px 14px}
+.sbar .bs{flex:1;font-size:.78rem;padding:9px 11px}
+/* Route building status */
+.route-status{background:rgba(196,96,59,.07);border-radius:var(--rs);padding:10px 14px;font-size:.8rem;color:var(--terra);font-weight:500;margin-bottom:12px;display:none}
+.route-status.on{display:block}
+
+/* ── VIDEO MODAL ── */
+.vid-in{position:relative;width:100%;max-width:430px;height:85vh;border-radius:18px;overflow:hidden;background:#000}
+.vsli{width:100%;height:100%;overflow:hidden;position:relative}
+.vsl{position:absolute;inset:0;transition:transform .44s ease}
+.vsl img{width:100%;height:100%;object-fit:cover;display:block}
+.vov{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.72),transparent 44%);display:flex;flex-direction:column;justify-content:flex-end;padding:24px}
+.vx{position:absolute;top:13px;right:13px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.13);backdrop-filter:blur(4px);border:none;color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.vx:hover{background:rgba(255,255,255,.26)}
+.vloc{font-family:'Fraunces',serif;font-size:1.62rem;font-weight:600;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.48);margin-bottom:5px}
+.vtags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px}
+.vtags .pill{background:rgba(255,255,255,.14);color:rgba(255,255,255,.88)}
+.vacts{display:flex;gap:8px}
+.vadd{flex:1;background:rgba(122,140,110,.76);color:#fff;border:none;border-radius:100px;padding:9px;font-family:'DM Sans',sans-serif;font-size:.81rem;font-weight:600;cursor:pointer}
+.vadd:hover{background:rgba(122,140,110,1)}
+.vbook{flex:1;background:rgba(255,255,255,.86);color:var(--dark);border:none;border-radius:100px;padding:9px;font-family:'DM Sans',sans-serif;font-size:.81rem;font-weight:700;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center}
+.vbook:hover{background:#fff}
+.vprog{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.16)}
+.vpbar{height:100%;background:var(--terra);transition:width .1s linear}
+.vdots{position:absolute;top:13px;left:50%;transform:translateX(-50%);display:flex;gap:4px}
+.vdot{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.36);transition:all .2s}
+.vdot.on{background:#fff;width:14px;border-radius:2px}
+
+
+/* ── LOCATION MODAL ── */
+.loc-modal-inner{position:relative;z-index:1;background:var(--card);border-radius:20px;width:100%;max-width:580px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--s3)}
+.loc-hero{position:relative;height:200px;flex-shrink:0}
+.loc-hero img{width:100%;height:100%;object-fit:cover;display:block}
+.loc-hero-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(28,20,16,.75),transparent 50%);display:flex;flex-direction:column;justify-content:flex-end;padding:20px}
+.loc-hero-title{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:3px}
+.loc-hero-type{font-size:.76rem;color:rgba(255,255,255,.75);font-weight:500}
+.loc-x{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.35);backdrop-filter:blur(4px);border:none;color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.loc-x:hover{background:rgba(0,0,0,.55)}
+.loc-body{padding:20px 22px;overflow-y:auto;flex:1}
+.loc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.loc-desc{font-size:.86rem;color:var(--muted);line-height:1.65;margin-bottom:18px}
+.loc-posts-hd{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-top:14px;border-top:1px solid var(--border)}
+.loc-post-row{display:flex;gap:11px;background:var(--bg);border-radius:var(--rs);overflow:hidden;margin-bottom:9px;cursor:pointer;transition:all .2s}
+.loc-post-row:hover{box-shadow:var(--s1);transform:translateX(2px)}
+.loc-post-row img{width:64px;height:64px;object-fit:cover;flex-shrink:0}
+.loc-post-info{padding:8px 10px 8px 0;flex:1;min-width:0}
+.loc-post-ttl{font-size:.84rem;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.loc-post-auth{font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:5px}
+.loc-post-auth img{width:18px;height:18px;border-radius:50%;object-fit:cover}
+.loc-no-posts{text-align:center;padding:20px 0;color:var(--muted);font-size:.84rem}
+/* Location pin on map */
+.ymap-loc-pin{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25);transition:transform .2s;color:#fff}
+.ymap-loc-pin:hover{transform:scale(1.15)}
+/* Location selector in create post */
+.loc-search-wrap{position:relative}
+.loc-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1.5px solid var(--border);border-radius:var(--rs);box-shadow:var(--s2);z-index:100;max-height:220px;overflow-y:auto;display:none}
+.loc-dropdown.on{display:block}
+.loc-opt{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;transition:background .15s;font-size:.86rem}
+.loc-opt:hover{background:rgba(196,96,59,.06)}
+.loc-opt .loc-type-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.loc-opt-name{font-weight:600}
+.loc-opt-type{font-size:.74rem;color:var(--muted)}
+.loc-selected-card{background:rgba(196,96,59,.07);border:1.5px solid rgba(196,96,59,.3);border-radius:var(--rs);padding:10px 14px;display:flex;align-items:center;gap:12px;margin-top:8px;display:none}
+.loc-selected-card.on{display:flex}
+.loc-selected-card img{width:48px;height:48px;border-radius:6px;object-fit:cover;flex-shrink:0}
+.loc-selected-info{flex:1;min-width:0}
+.loc-selected-name{font-size:.9rem;font-weight:700;margin-bottom:2px}
+.loc-selected-type{font-size:.74rem;color:var(--muted)}
+.loc-clear-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.78rem;text-decoration:underline;flex-shrink:0}
+/* ── CREATE POST MODAL ── */
+.create-modal-inner{position:relative;z-index:1;background:var(--card);border-radius:20px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:var(--s3);padding:32px}
+.create-modal-inner h3{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:600;margin-bottom:24px}
+.img-upload-area{border:2px dashed var(--border);border-radius:var(--r);padding:32px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.img-upload-area:hover{border-color:var(--terra);background:rgba(196,96,59,.03)}
+.img-upload-area.has-img{border-style:solid;border-color:var(--terra);padding:0}
+.img-upload-area img{width:100%;border-radius:calc(var(--r) - 2px);display:block;max-height:280px;object-fit:cover}
+.img-upload-area .upload-hint{color:var(--muted);font-size:.88rem;line-height:1.5}
+.img-upload-area .upload-hint strong{display:block;font-size:1rem;color:var(--text);margin-bottom:4px}
+.img-upload-overlay{position:absolute;inset:0;background:rgba(28,20,16,.5);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;border-radius:calc(var(--r) - 2px)}
+.img-upload-area.has-img:hover .img-upload-overlay{opacity:1}
+.img-upload-overlay span{color:#fff;font-size:.84rem;font-weight:600}
+.create-tags-wrap{display:flex;gap:7px;flex-wrap:wrap}
+.create-tag{display:inline-block;background:rgba(28,20,16,.06);color:var(--muted);border-radius:100px;padding:7px 14px;font-size:.79rem;font-weight:500;cursor:pointer;transition:all .2s;border:1.5px solid transparent}
+.create-tag.on{background:rgba(196,96,59,.12);color:var(--terra);border-color:rgba(196,96,59,.3)}
+.create-field-label{font-size:.74rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:block}
+textarea.fi{resize:vertical;min-height:80px;font-family:'DM Sans',sans-serif}
+#post-coord-display{display:none;margin-top:8px;font-size:.78rem;color:var(--terra);font-weight:600;align-items:center;gap:8px}
+.post-success{background:rgba(122,140,110,.1);border:1px solid rgba(122,140,110,.25);border-radius:var(--rs);padding:12px 16px;font-size:.86rem;color:#2F6335;display:none;margin-bottom:16px}
+.post-success.on{display:block}
+
+@media(max-width:1100px){.masonry{column-count:3}.tsplit{grid-template-columns:1fr}.tmap{display:none}}
+@media(max-width:768px){.masonry{column-count:2}#pg-auth.on{grid-template-columns:1fr}.auth-vis{display:none}.prev-grid{grid-template-columns:repeat(2,1fr)}.pm-inner{grid-template-columns:1fr;max-height:93vh}.pm-gal{min-height:200px;max-height:250px}.ob-cards{flex-direction:column;align-items:center}.ob-card{max-width:300px;width:100%}.pr-stats{grid-template-columns:repeat(3,1fr)}.pr-hero{flex-direction:column}}
+@media(max-width:480px){.masonry{column-count:2}}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav class="nb" id="nb">
+  <span class="logo" onclick="go('landing')">Краевед<em>.</em></span>
+  <div class="nlinks">
+    <span class="nlink" onclick="go('feed')">Лента</span>
+    <div class="nav-user" id="nav-user" style="display:none">
+      <img class="nav-av" id="nav-av" src="" alt="" onclick="go('profile')">
+      <span class="nav-nm" id="nav-nm" onclick="go('profile')"></span>
+      <button class="btn-nav" id="nav-post-btn" onclick="openCreatePost()" style="display:none">+ Пост</button>
+    </div>
+    <button class="btn-nav" id="nav-btn" onclick="go('auth')">Войти</button>
+  </div>
+</nav>
+
+<div class="toasts" id="toasts"></div>
+
+<div class="loader" id="loader">
+  <div style="text-align:center">
+    <div style="font-family:'Fraunces',serif;font-style:italic;font-size:2.3rem;color:var(--terra);margin-bottom:4px">Краевед</div>
+    <div style="font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:40px">Строим маршрут</div>
+  </div>
+  <div class="lring"></div>
+  <div class="ltxt" id="ltxt">Анализируем предпочтения...</div>
+  <div class="ldots"><span></span><span></span><span></span></div>
+</div>
+
+<!-- LOCATION MODAL -->
+<div class="modal" id="loc-modal">
+  <div class="mbg" onclick="closeLocModal()"></div>
+  <div class="loc-modal-inner">
+    <div class="loc-hero">
+      <img id="lm-img" src="" alt="">
+      <div class="loc-hero-ov">
+        <div class="loc-hero-title" id="lm-title"></div>
+        <div class="loc-hero-type" id="lm-type"></div>
+      </div>
+      <button class="loc-x" onclick="closeLocModal()">&#10005;</button>
+    </div>
+    <div class="loc-body">
+      <div class="loc-tags" id="lm-tags"></div>
+      <div class="loc-desc" id="lm-desc"></div>
+      <div class="loc-posts-hd">Публикации с этой локации</div>
+      <div id="lm-posts"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE POST MODAL -->
+<div class="modal" id="create-modal">
+  <div class="mbg" onclick="closeCreatePost()"></div>
+  <div class="create-modal-inner">
+    <button style="position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:rgba(28,20,16,.07);border:none;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center" onclick="closeCreatePost()">&#10005;</button>
+    <h3>Новая публикация</h3>
+    <div class="post-success" id="post-success">Пост опубликован — он появился в ленте и на карте.</div>
+
+    <div style="margin-bottom:20px">
+      <span class="create-field-label">Фото</span>
+      <div class="img-upload-area" id="img-upload-area" onclick="document.getElementById('post-file').click()">
+        <div class="upload-hint">
+          <strong>Выберите фото</strong>
+          Нажмите, чтобы загрузить
+        </div>
+        <div class="img-upload-overlay"><span>Изменить фото</span></div>
+      </div>
+      <input type="file" id="post-file" accept="image/*" style="display:none" onchange="onPostFileChange(this)">
+    </div>
+
+    <div style="margin-bottom:16px">
+      <span class="create-field-label">Название места</span>
+      <input class="fi" type="text" id="post-title" placeholder="Например: Абрау-Дюрсо, закат">
+    </div>
+
+    <div style="margin-bottom:16px">
+      <span class="create-field-label">Описание (необязательно)</span>
+      <textarea class="fi" id="post-desc" placeholder="Расскажи об этом месте..."></textarea>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <span class="create-field-label">Локация</span>
+      <div style="font-size:.76rem;color:var(--muted);margin-bottom:8px">Выбери из известных мест или поставь точку на карте</div>
+
+      <!-- Location search dropdown -->
+      <div class="loc-search-wrap" style="margin-bottom:10px">
+        <input class="fi" type="text" id="loc-search-input" placeholder="Поиск по названию локации..."
+          oninput="onLocSearch(this.value)" onfocus="onLocSearch(this.value)"
+          autocomplete="off">
+        <div class="loc-dropdown" id="loc-dropdown"></div>
+      </div>
+
+      <!-- Selected known location card -->
+      <div class="loc-selected-card" id="loc-selected-card">
+        <img id="lsc-img" src="" alt="">
+        <div class="loc-selected-info">
+          <div class="loc-selected-name" id="lsc-name"></div>
+          <div class="loc-selected-type" id="lsc-type"></div>
+        </div>
+        <button class="loc-clear-btn" onclick="clearLocSelection()">Сбросить</button>
+      </div>
+
+      <!-- Divider -->
+      <div id="loc-map-divider" style="display:flex;align-items:center;gap:10px;margin:10px 0">
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+        <span style="font-size:.74rem;color:var(--light);font-weight:500">или укажи место на карте</span>
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+      </div>
+
+      <!-- Mini map fallback -->
+      <div id="post-minimap" style="width:100%;height:200px;border-radius:var(--rs);overflow:hidden;border:1.5px solid var(--border);background:#E8E0D4;position:relative">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.84rem;flex-direction:column;gap:6px" id="minimap-hint">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Карта загружается...
+        </div>
+      </div>
+      <div id="post-coord-display" style="display:none;margin-top:8px;font-size:.78rem;color:var(--terra);font-weight:600;display:flex;align-items:center;gap:8px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="post-coord-text">Точка не выбрана</span>
+        <button onclick="clearPostCoord()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.76rem;text-decoration:underline">Сбросить</button>
+      </div>
+      <input type="hidden" id="post-lat">
+      <input type="hidden" id="post-lon">
+      <input type="hidden" id="post-loc-id">
+    </div>
+
+
+    <div style="margin-bottom:24px">
+      <span class="create-field-label">Теги</span>
+      <div class="create-tags-wrap" id="create-tags">
+        <span class="create-tag" data-tag="Вино" onclick="toggleCreateTag(this)">Вино</span>
+        <span class="create-tag" data-tag="Природа" onclick="toggleCreateTag(this)">Природа</span>
+        <span class="create-tag" data-tag="Гастро" onclick="toggleCreateTag(this)">Гастро</span>
+        <span class="create-tag" data-tag="Море" onclick="toggleCreateTag(this)">Море</span>
+        <span class="create-tag" data-tag="Горы" onclick="toggleCreateTag(this)">Горы</span>
+        <span class="create-tag" data-tag="Трекинг" onclick="toggleCreateTag(this)">Трекинг</span>
+        <span class="create-tag" data-tag="Релакс" onclick="toggleCreateTag(this)">Релакс</span>
+        <span class="create-tag" data-tag="Культура" onclick="toggleCreateTag(this)">Культура</span>
+        <span class="create-tag" data-tag="Ферма" onclick="toggleCreateTag(this)">Ферма</span>
+        <span class="create-tag" data-tag="Закат" onclick="toggleCreateTag(this)">Закат</span>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button class="bp bfull" onclick="submitPost()" id="post-submit-btn">Опубликовать</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal" id="post-modal">
+  <div class="mbg" onclick="closePost()"></div>
+  <div class="pm-inner">
+    <div class="pm-gal">
+      <button class="pm-arr l" onclick="pmSlide(-1)">&#8249;</button>
+      <img id="pm-img" src="" alt="">
+      <button class="pm-arr r" onclick="pmSlide(1)">&#8250;</button>
+      <div class="pm-dots" id="pm-dots"></div>
+      <button class="pm-vbtn" onclick="openVidFromPost()">&#9654; Видео-визит</button>
+    </div>
+    <div class="pm-info">
+      <button class="pm-x" onclick="closePost()">&#10005;</button>
+      <div><div class="pm-ttl" id="pm-ttl"></div><div class="pm-tp" id="pm-tp"></div></div>
+      <div class="pm-tags" id="pm-tags"></div>
+      <div class="pm-desc" id="pm-desc"></div>
+      <div class="pm-auth">
+        <img id="pm-av" src="" alt="">
+        <div><div class="pm-an" id="pm-an"></div><div class="pm-at" id="pm-at"></div></div>
+      </div>
+      <div class="pm-acts">
+        <button class="bp" onclick="saveFromPost();closePost()">Сохранить</button>
+        <button class="bs" onclick="closePost();go('tour-new')">Создать тур</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VIDEO MODAL -->
+<div class="modal" id="vid-modal">
+  <div class="mbg" onclick="closeVid()"></div>
+  <div class="vid-in">
+    <button class="vx" onclick="closeVid()">&#10005;</button>
+    <div class="vsli" id="vsli"></div>
+    <div class="vov">
+      <div class="vloc" id="vloc"></div>
+      <div class="vtags" id="vtags"></div>
+      <div class="vacts">
+        <button class="vadd" onclick="toast('Добавлено в тур')">+ В тур</button>
+        <a class="vbook" id="vbook" href="#" target="_blank">Забронировать</a>
+      </div>
+    </div>
+    <div class="vdots" id="vdots"></div>
+    <div class="vprog"><div class="vpbar" id="vpbar" style="width:0%"></div></div>
+  </div>
+</div>
+
+<!-- ═══ LANDING ═══ -->
+<div class="page on" id="pg-landing">
+  <section class="hero">
+    <div class="hbg"></div><div class="hov"></div>
+    <div class="hc">
+      <div class="hbadge">Краснодарский край</div>
+      <h1>Открывай <em>Краснодар</em><br>по-новому</h1>
+      <p class="hsub">Персональный маршрут за 2 минуты.<br>ИИ подбирает под тебя — никаких шаблонов.</p>
+      <div class="hcta"><button class="bp" style="font-size:1rem;padding:14px 42px;box-shadow:0 8px 30px rgba(196,96,59,.38)" onclick="go('ob')">Начать путешествие</button></div>
+    </div>
+    <div class="hscroll">Листай <i></i></div>
+  </section>
+  <section class="how-s">
+    <div class="how-hd"><div class="ey">Как работает</div><h2>Три шага до идеального маршрута</h2><p>Никаких анкет — просто листай, и маршрут появится сам.</p></div>
+    <div class="how-grid">
+      <div class="how-card"><div class="how-n">1</div><h3>Выбери вайб</h3><p>Пара быстрых выборов — система поймёт, что тебе по душе.</p></div>
+      <div class="how-card"><div class="how-n">2</div><h3>Листай ленту</h3><p>Сохраняй понравившиеся места. Профиль уточняется с каждым действием.</p></div>
+      <div class="how-card"><div class="how-n">3</div><h3>Получи маршрут</h3><p>ИИ соберёт тур с картой, жильём и трансфером за 15 секунд.</p></div>
+    </div>
+  </section>
+  <section class="prev-s">
+    <div class="ey">Что внутри</div><h2>Места, которые вдохновляют</h2><p class="sub">Посмотри на подборку прямо сейчас</p>
+    <div class="prev-grid" id="prev-grid"></div>
+    <div style="text-align:center"><button class="bp" onclick="go('ob')">Смотреть все места</button></div>
+  </section>
+  <section class="cta-s">
+    <h2>Твой следующий маршрут<br>ждёт тебя</h2>
+    <p>Тысячи путешественников уже открыли Краснодарский край по-новому</p>
+    <button class="bp" onclick="go('ob')">Создать маршрут бесплатно</button>
+  </section>
+  <footer class="foot">
+    <div class="flogo">Краевед<em>.</em></div>
+    <div class="ftxt">© 2026 · Персонализированные туры по Краснодарскому краю</div>
+    <div class="ftxt">MVP v3.0</div>
+  </footer>
+</div>
+
+<!-- ═══ AUTH ═══ -->
+<div class="page" id="pg-auth">
+  <div class="auth-vis">
+    <div class="auth-vov">
+      <h2>Твой личный<br>путеводитель</h2>
+      <p style="margin-top:9px">Создай профиль и получи<br>персональный маршрут</p>
+      <div style="margin-top:22px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+        <span class="pill" style="background:rgba(255,255,255,.14);color:rgba(255,255,255,.88)">Вино</span>
+        <span class="pill" style="background:rgba(255,255,255,.14);color:rgba(255,255,255,.88)">Природа</span>
+        <span class="pill" style="background:rgba(255,255,255,.14);color:rgba(255,255,255,.88)">Горы</span>
+        <span class="pill" style="background:rgba(255,255,255,.14);color:rgba(255,255,255,.88)">Гастро</span>
+      </div>
+    </div>
+  </div>
+  <div class="auth-side">
+    <div class="auth-wrap">
+      <div class="auth-tabs">
+        <div class="auth-tab on" onclick="authTab('t',this)">Путешественник</div>
+        <div class="auth-tab" onclick="authTab('b',this)">Бизнес</div>
+      </div>
+      <h2 id="auth-title">Добро пожаловать</h2>
+      <p class="asub" id="auth-sub">Войдите в аккаунт</p>
+      <div class="aerr" id="aerr"></div>
+      <div class="aok" id="aok"></div>
+      <button class="btn-vk" onclick="doVk()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.408 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.864-.525-2.05-1.727-1.033-1-1.49-1.135-1.744-1.135-.356 0-.458.102-.458.593v1.575c0 .424-.135.678-1.253.678-1.846 0-3.896-1.118-5.335-3.202C5.122 11.251 4.5 9.35 4.5 8.91c0-.254.102-.491.593-.491h1.744c.44 0 .61.203.779.678.864 2.49 2.303 4.675 2.897 4.675.22 0 .322-.102.322-.66V10.27c-.068-1.186-.695-1.287-.695-1.71 0-.203.17-.407.44-.407h2.744c.373 0 .508.203.508.643v3.473c0 .373.17.508.271.508.22 0 .407-.135.813-.542 1.253-1.405 2.151-3.574 2.151-3.574.119-.254.322-.491.762-.491h1.744c.525 0 .643.27.525.643-.22 1.016-2.354 4.030-2.354 4.030-.186.305-.254.44 0 .78.186.253.796.779 1.203 1.253.745.864 1.32 1.591 1.473 2.09.152.491-.102.745-.593.745z"/></svg>
+        Войти через VK
+      </button>
+      <div class="auth-or">или</div>
+      <div class="fg" id="fg-nm" style="display:none"><label>Имя</label><input class="fi" type="text" id="a-nm" placeholder="Алексей"></div>
+      <div class="fg"><label>Email</label><input class="fi" type="email" id="a-em" placeholder="your@email.com"></div>
+      <div class="fg"><label>Пароль</label><input class="fi" type="password" id="a-pw" placeholder="min. 6 символов" onkeydown="if(event.key==='Enter')doAuth()"></div>
+      <div class="fg" id="fg-cf" style="display:none"><label>Повтор пароля</label><input class="fi" type="password" id="a-cf" placeholder="Повторите пароль"></div>
+      <button class="bp btn-auth" id="abtn" onclick="doAuth()">
+        <div class="spi"></div><span class="albl" id="albl">Войти</span>
+      </button>
+      <div class="auth-sw" id="auth-sw">Нет аккаунта? <a onclick="toggleAuth()">Зарегистрироваться</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ONBOARDING ═══ -->
+<div class="page" id="pg-ob">
+  <div class="ob-hd">
+    <div class="ob-prog"><div class="ob-bar" id="ob-bar" style="width:0%"></div></div>
+    <div class="ob-lbl" id="ob-lbl">Шаг 1 из 6</div>
+    <div class="ob-q" id="ob-q"></div>
+    <div class="ob-hint">Выбери один вариант — тот, что откликается сильнее</div>
+  </div>
+  <div id="ob-body"></div>
+</div>
+
+<!-- ═══ FEED ═══ -->
+<div class="page" id="pg-feed">
+  <div class="ffilters" id="ffilters"></div>
+  <div class="masonry" id="masonry"></div>
+  <div class="lmore"><button class="lmbtn" onclick="loadMore()">Загрузить ещё</button></div>
+  <button class="fab" onclick="go('tour-new')" title="Создать маршрут">&#10022;</button>
+  <nav class="bnav">
+    <div class="bni on" onclick="go('feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Лента</div>
+    <div class="bni" onclick="go('map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Карта</div>
+    <div class="bni" onclick="go('places')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Места</div>
+    <div class="bni" onclick="go('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Профиль</div>
+  </nav>
+</div>
+
+<!-- ═══ MAP ═══ -->
+<div class="page" id="pg-map">
+  <div class="map-wrap">
+    <div id="map-full"></div>
+    <div class="map-leg">
+      <h3>Карта мест</h3>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:6px;line-height:1.8">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          <div style="width:14px;height:14px;border-radius:50%;background:#8B3A7A;flex-shrink:0"></div>Винодельня
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          <div style="width:14px;height:14px;border-radius:50%;background:#2E7D9E;flex-shrink:0"></div>Водопад / маршрут
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          <div style="width:14px;height:14px;border-radius:50%;background:#4A6741;flex-shrink:0"></div>Горы / плато
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          <div style="width:14px;height:14px;border-radius:50%;background:#8B6914;flex-shrink:0"></div>Ферма
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          <div style="width:14px;height:14px;border-radius:50%;background:#C4603B;border:2px solid #C4603B;flex-shrink:0"></div>Пост пользователя
+        </div>
+        <div style="font-size:.7rem;color:var(--light)">Нажми на метку, чтобы открыть</div>
+      </div>
+    </div>
+  </div>
+  <nav class="bnav">
+    <div class="bni" onclick="go('feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Лента</div>
+    <div class="bni on" onclick="go('map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Карта</div>
+    <div class="bni" onclick="go('places')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Места</div>
+    <div class="bni" onclick="go('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Профиль</div>
+  </nav>
+</div>
+
+<!-- ═══ PLACES ═══ -->
+<div class="page" id="pg-places">
+  <div class="pw">
+    <div class="pw-hd"><h2>Мои места</h2><p id="places-cnt"></p></div>
+    <div id="places-list"></div>
+  </div>
+  <nav class="bnav">
+    <div class="bni" onclick="go('feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Лента</div>
+    <div class="bni" onclick="go('map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Карта</div>
+    <div class="bni on" onclick="go('places')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Места</div>
+    <div class="bni" onclick="go('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Профиль</div>
+  </nav>
+</div>
+
+<!-- ═══ PROFILE ═══ -->
+<div class="page" id="pg-profile">
+  <div class="prw" id="prw"></div>
+  <nav class="bnav">
+    <div class="bni" onclick="go('feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Лента</div>
+    <div class="bni" onclick="go('map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Карта</div>
+    <div class="bni" onclick="go('places')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Места</div>
+    <div class="bni on" onclick="go('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Профиль</div>
+  </nav>
+</div>
+
+<!-- ═══ BUSINESS ═══ -->
+<!-- ═══ TOUR FORM ═══ -->
+<div class="page" id="pg-tour-new">
+  <div class="tf-w">
+    <button onclick="go('feed')" style="display:inline-flex;align-items:center;gap:5px;background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.84rem;cursor:pointer;margin-bottom:16px;margin-top:14px">&#8592; Назад</button>
+    <div class="tf-hd"><div class="ey">Генератор маршрута</div><h2>Куда и когда?</h2><p>Укажи параметры — ИИ соберёт тур специально для тебя</p></div>
+    <div class="fs"><div class="fsl">Даты поездки</div>
+      <div class="date-row">
+        <div><span class="dsub">С</span><input type="date" id="dt-from" value="2026-05-10"></div>
+        <div><span class="dsub">По</span><input type="date" id="dt-to" value="2026-05-13"></div>
+      </div>
+    </div>
+    <div class="fs"><div class="fsl">Состав группы</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap" id="grp-pills">
+        <span class="pt on" data-g="solo" onclick="selGrp(this)">Соло</span>
+        <span class="pt" data-g="couple" onclick="selGrp(this)">Пара</span>
+        <span class="pt" data-g="family" onclick="selGrp(this)">Семья с детьми</span>
+        <span class="pt" data-g="friends" onclick="selGrp(this)">Друзья</span>
+      </div>
+      <div id="child-age" style="display:none;margin-top:8px"><input class="fi" placeholder="Возраст детей, напр: 5, 9" style="max-width:250px"></div>
+    </div>
+    <div class="fs"><div class="fsl">Бюджет на человека</div>
+      <div class="btrack"><div class="bfill" id="bfill" style="width:35%"></div><input type="range" class="bsli" id="bsli" min="3000" max="50000" value="20000" step="500" oninput="onBudget(this)"></div>
+      <div class="blbls"><span>3 000 ₽</span><span>50 000 ₽</span></div>
+      <div class="bcur" id="bcur">до 20 000 ₽</div>
+    </div>
+    <div class="fs"><div class="fsl">Типы активностей</div>
+      <div class="cwrap" id="act-chips">
+        <span class="pc on" data-a="gastro" onclick="togChip(this)">Гастро</span>
+        <span class="pc" data-a="wine" onclick="togChip(this)">Вино</span>
+        <span class="pc on" data-a="eco" onclick="togChip(this)">Эко</span>
+        <span class="pc" data-a="active" onclick="togChip(this)">Активный</span>
+        <span class="pc" data-a="culture" onclick="togChip(this)">Культурный</span>
+        <span class="pc" data-a="wellness" onclick="togChip(this)">Оздоровительный</span>
+      </div>
+    </div>
+    <div class="fs"><div class="fsl">Транспорт</div>
+      <div class="tcc">
+        <div class="tcard on" id="tc-car" onclick="selTrans('car')">
+          <div class="tcard-ico">А</div><div class="tcard-lbl">На машине</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:3px">Маршрут по дорогам</div>
+        </div>
+        <div class="tcard" id="tc-pub" onclick="selTrans('public')">
+          <div class="tcard-ico">Т</div><div class="tcard-lbl">Без машины</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:3px">Общественный транспорт</div>
+        </div>
+      </div>
+    </div>
+    <div class="fs"><div class="fsl">Мои сохранённые места</div>
+      <div class="sp-block">
+        <label><input type="checkbox" id="inc-saved" checked>Включить в маршрут</label>
+        <div class="sp-prev" id="sp-prev"></div>
+        <div id="sp-count" style="font-size:.76rem;color:var(--muted);margin-top:6px"></div>
+      </div>
+    </div>
+    <button class="gen-btn" id="gen-btn" onclick="generateTour()"><span id="gen-lbl">Создать маршрут</span></button>
+  </div>
+</div>
+
+<!-- ═══ TOUR RESULT ═══ -->
+<div class="page" id="pg-tour-result">
+  <div class="tsplit">
+    <div class="tlist" id="tlist"></div>
+    <div class="tmap"><div id="ymap"></div></div>
+  </div>
+  <div class="sbar">
+    <button class="bp" onclick="scrollHotels()">Забронировать жильё</button>
+    <button class="bs" onclick="openNav()">Маршрут в навигатор</button>
+    <button class="bs" onclick="shareTour()">Поделиться</button>
+  </div>
+</div>
+
+<script>
+/* ════ YANDEX API KEY ════
+   Замени YOUR_API_KEY на свой ключ JavaScript API от Яндекса
+   Получить: https://developer.tech.yandex.ru/
+═══════════════════════════ */
+const YANDEX_API_KEY = '1eb660d0-acf8-4da4-9147-a4746d437647';
+
+/* ════ DATA ════ */
+const POSTS=[
+  {id:1,title:'Абрау-Дюрсо',cat:'wine',tags:['Вино','Природа','Романтика'],type:'Винодельня',author:'Мария К.',biz:false,img:'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=700&q=80',imgs:['https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=700&q=80','https://images.unsplash.com/photo-1474722883778-792e7990302f?w=700&q=80'],desc:'Всемирно известный завод игристых вин. Дегустация, экскурсия по подвалам и потрясающие закаты над озером.',h:'tall',lat:44.708,lon:37.565},
+  {id:2,title:'Семигорье Spa',cat:'wellness',tags:['Спа','Горы','Релакс'],type:'Спа-курорт',author:'Wellness Resort',biz:true,img:'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=700&q=80',imgs:['https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=700&q=80'],desc:'Термальные источники и горный воздух. Спа-процедуры, лечебные ванны, тишина.',h:'medium',lat:44.80,lon:38.70},
+  {id:3,title:'Агроферма Привет',cat:'gastro',tags:['Гастро','Ферма','Эко'],type:'Ферма',author:'Иван А.',biz:true,img:'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=700&q=80',imgs:['https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=700&q=80'],desc:'Фермерский обед с видом на горы. Сыры, мёд, домашнее вино — всё своё.',h:'short',lat:44.551,lon:38.152},
+  {id:4,title:'Долина реки Пшада',cat:'active',tags:['Трекинг','Водопады','Эко'],type:'Природный маршрут',author:'Алексей Т.',biz:false,img:'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=700&q=80',imgs:['https://images.unsplash.com/photo-1501854140801-50d01698950b?w=700&q=80'],desc:'Маршрут через лесные тропы к водопадам. Дикая природа без туристических автобусов.',h:'tall',lat:44.571,lon:38.058},
+  {id:5,title:'Геленджик. Бухта',cat:'nature',tags:['Море','Рассвет'],type:'Набережная',author:'Светлана М.',biz:false,img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&q=80',imgs:['https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&q=80'],desc:'Самая красивая бухта побережья. Рассвет здесь стоит подъёма в 5 утра.',h:'medium',lat:44.558,lon:38.077},
+  {id:6,title:'Голубицкая. Причал',cat:'gastro',tags:['Рыба','Закат','Лиман'],type:'Ресторан',author:'Рыбный дворик',biz:true,img:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=700&q=80',imgs:['https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=700&q=80'],desc:'Свежая рыба с лодки, закат над лиманом, никакой суеты.',h:'short',lat:45.38,lon:37.26},
+  {id:7,title:'Красная Поляна',cat:'active',tags:['Горы','Канатная','Вид'],type:'Горный курорт',author:'Даниил Р.',biz:false,img:'https://images.unsplash.com/photo-1551524559-8af4e6624178?w=700&q=80',imgs:['https://images.unsplash.com/photo-1551524559-8af4e6624178?w=700&q=80'],desc:'Летом — трекинг и горные велосипеды. Один из лучших горнолыжных курортов России.',h:'tall',lat:43.68,lon:40.21},
+  {id:8,title:'Новороссийск. Бухта',cat:'culture',tags:['История','Море'],type:'Исторический объект',author:'Катя В.',biz:false,img:'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=700&q=80',imgs:['https://images.unsplash.com/photo-1519046904884-53103b34b206?w=700&q=80'],desc:'Город-герой с мощной исторической аурой. Крейсер «Михаил Кутузов», набережная.',h:'medium',lat:44.724,lon:37.768},
+  {id:9,title:'Горячий Ключ',cat:'wellness',tags:['Термы','Лес'],type:'Бальнеологический курорт',author:'Сергей П.',biz:false,img:'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=700&q=80',imgs:['https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=700&q=80'],desc:'Лечебные минеральные воды, скальный массив и лес.',h:'medium',lat:44.63,lon:39.13},
+  {id:10,title:'Мысхако. Скалы',cat:'wine',tags:['Вино','Море'],type:'Виноградник',author:'Vineyards KRD',biz:true,img:'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=700&q=80',imgs:['https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=700&q=80'],desc:'Виноград на базальтовых почвах с видом на море — уникальный терруар.',h:'tall',lat:44.744,lon:37.671},
+  {id:11,title:'Сочи. Дендрарий',cat:'nature',tags:['Природа','Цветы'],type:'Ботанический сад',author:'Анна К.',biz:false,img:'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=700&q=80',imgs:['https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=700&q=80'],desc:'Тропические растения, вековые деревья и фонтаны.',h:'short',lat:43.575,lon:39.719},
+  {id:12,title:'Лагонаки',cat:'active',tags:['Плато','Туман','Трекинг'],type:'Природный маршрут',author:'Михаил Г.',biz:false,img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=700&q=80',imgs:['https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=700&q=80'],desc:'Горное плато с видами, от которых захватывает дух. Идти нужно с рассветом.',h:'tall',lat:44.045,lon:39.892},
+  {id:13,title:'Тамань. Виноградники',cat:'wine',tags:['Вино','Степь'],type:'Виноградник',author:'Фанагория',biz:true,img:'https://images.unsplash.com/photo-1474722883778-792e7990302f?w=700&q=80',imgs:['https://images.unsplash.com/photo-1474722883778-792e7990302f?w=700&q=80'],desc:'Один из крупнейших виноградников России. Дегустация, закат в степи.',h:'medium',lat:45.209,lon:36.718},
+  {id:14,title:'Краснодар. Красная',cat:'culture',tags:['Город','Кофе'],type:'Городское пространство',author:'Ника С.',biz:false,img:'https://images.unsplash.com/photo-1498503182468-3b51cbb6cb24?w=700&q=80',imgs:['https://images.unsplash.com/photo-1498503182468-3b51cbb6cb24?w=700&q=80'],desc:'Главная пешеходная улица — кофейни, рестораны, street art.',h:'short',lat:45.040,lon:38.976},
+  {id:15,title:'Мезмай. Скалы',cat:'active',tags:['Скалы','Трекинг'],type:'Природный маршрут',author:'Дима Т.',biz:false,img:'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=700&q=80',imgs:['https://images.unsplash.com/photo-1519681393784-d120267933ba?w=700&q=80'],desc:'Каньон, водопады и скалы — всё в радиусе 5 км.',h:'medium',lat:44.16,lon:39.59},
+];
+
+
+/* ════ KNOWN LOCATIONS ════ */
+const LOCATIONS = [
+  {id:'L1', name:'Абрау-Дюрсо', type:'winery', typeLabel:'Винодельня',
+   tags:['Вино','Природа','Романтика'], lat:44.708, lon:37.565,
+   desc:'Всемирно известный завод игристых вин. Дегустация, экскурсия по подвалам, закаты над озером.',
+   img:'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=700&q=80'},
+  {id:'L2', name:'Мысхако. Чёрные скалы', type:'winery', typeLabel:'Виноградник',
+   tags:['Вино','Море','Виноград'], lat:44.744, lon:37.671,
+   desc:'Виноград на базальтовых почвах с видом на море. Уникальный терруар Краснодарского края.',
+   img:'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=700&q=80'},
+  {id:'L3', name:'Тамань. Виноградники Фанагории', type:'winery', typeLabel:'Винодельня',
+   tags:['Вино','Степь','Закат'], lat:45.209, lon:36.718,
+   desc:'Один из крупнейших виноградников России. Дегустация, закат в степи.',
+   img:'https://images.unsplash.com/photo-1474722883778-792e7990302f?w=700&q=80'},
+  {id:'L4', name:'Долина реки Пшада', type:'waterfall', typeLabel:'Природный маршрут',
+   tags:['Трекинг','Водопады','Эко'], lat:44.571, lon:38.058,
+   desc:'Маршрут через лесные тропы к водопадам. Дикая природа без туристических автобусов.',
+   img:'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=700&q=80'},
+  {id:'L5', name:'Лагонаки. Горное плато', type:'mountain', typeLabel:'Природный маршрут',
+   tags:['Плато','Туман','Трекинг'], lat:44.045, lon:39.892,
+   desc:'Горное плато с видами, от которых захватывает дух. Идти нужно с рассветом.',
+   img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=700&q=80'},
+  {id:'L6', name:'Красная Поляна', type:'mountain', typeLabel:'Горный курорт',
+   tags:['Горы','Канатная','Вид'], lat:43.68, lon:40.21,
+   desc:'Летом — трекинг и горные велосипеды. Зимой — один из лучших горнолыжных курортов России.',
+   img:'https://images.unsplash.com/photo-1551524559-8af4e6624178?w=700&q=80'},
+  {id:'L7', name:'Агроферма Привет', type:'farm', typeLabel:'Ферма',
+   tags:['Гастро','Ферма','Эко'], lat:44.551, lon:38.152,
+   desc:'Фермерский обед с видом на горы. Сыры, мёд, домашнее вино — всё своё.',
+   img:'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=700&q=80'},
+  {id:'L8', name:'Геленджик. Набережная', type:'beach', typeLabel:'Море / Набережная',
+   tags:['Море','Прогулка','Закат'], lat:44.558, lon:38.077,
+   desc:'Самая красивая бухта побережья. Рассвет здесь стоит подъёма в 5 утра.',
+   img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&q=80'},
+  {id:'L9', name:'Горячий Ключ', type:'spa', typeLabel:'Бальнеологический курорт',
+   tags:['Термы','Лес','Здоровье'], lat:44.63, lon:39.13,
+   desc:'Лечебные минеральные воды, скальный массив и лес.',
+   img:'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=700&q=80'},
+  {id:'L10', name:'Мезмай. Орлиные скалы', type:'mountain', typeLabel:'Природный маршрут',
+   tags:['Скалы','Трекинг','Каньон'], lat:44.16, lon:39.59,
+   desc:'Каньон, водопады и скалы — всё в радиусе 5 км. Самое недооценённое место края.',
+   img:'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=700&q=80'},
+  {id:'L11', name:'Новороссийск. Цемесская бухта', type:'culture', typeLabel:'Исторический объект',
+   tags:['История','Море','Порт'], lat:44.724, lon:37.768,
+   desc:'Город-герой. Крейсер «Михаил Кутузов», набережная, малага.',
+   img:'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=700&q=80'},
+  {id:'L12', name:'Краснодар. Улица Красная', type:'culture', typeLabel:'Городское пространство',
+   tags:['Город','Кофе','Прогулка'], lat:45.040, lon:38.976,
+   desc:'Главная пешеходная улица — кофейни, рестораны, street art.',
+   img:'https://images.unsplash.com/photo-1498503182468-3b51cbb6cb24?w=700&q=80'},
+];
+
+/* Location type → SVG icon (inline, color-agnostic) */
+const LOC_ICONS = {
+  winery:   '<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M18 3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v2a9 9 0 0 0 4 7.5V19H8a1 1 0 0 0 0 2h8a1 1 0 0 0 0-2h-2v-6.5A9 9 0 0 0 18 5V3z"/></svg>',
+  waterfall:'<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>',
+  mountain: '<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M14 6l-1-2H5v17h2v-7h5l1 2h7V6h-6zm4 8h-4l-1-2H7V6h5l1 2h5v6z"/></svg>',
+  farm:     '<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19 9l-7-7-7 7v11h5v-5h4v5h5V9z"/></svg>',
+  beach:    '<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M13.127 14.56l1.43-1.43 6.44 6.443L19.57 21zm4.293-5.73l2.83-2.829-1.414-1.414-.707.707-1.414-1.414L19 2.988 14.988 7l1.414 1.414-.707.707 1.417 1.419zm-6.413-.73l-4.47-4.47a2 2 0 0 0-2.828 2.829l4.47 4.47a2 2 0 0 0 2.829-2.83z"/></svg>',
+  spa:      '<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 22c4.97 0 9-4.03 9-9-4.97 0-9 4.03-9 9zm0 0c0-4.97-4.03-9-9-9 0 4.97 4.03 9 9 9zm0-18C9.8 6.14 8 8.33 8 11h8c0-2.67-1.8-4.86-4-5z"/></svg>',
+  culture:  '<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 3L2 12h3v8h6v-5h2v5h6v-8h3L12 3z"/></svg>',
+};
+
+const LOC_COLORS = {
+  winery:'#8B3A7A', waterfall:'#2E7D9E', mountain:'#4A6741',
+  farm:'#8B6914', beach:'#1565C0', spa:'#6A5ACD', culture:'#B8420A',
+};
+
+const OB_STEPS=[
+  {q:'Что тебе ближе?',cards:[{img:'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=700&q=80',lbl:'Природа и тишина',sub:'Леса, горы, водопады'},{img:'https://images.unsplash.com/photo-1498503182468-3b51cbb6cb24?w=700&q=80',lbl:'Город и культура',sub:'Кафе, музеи, прогулки'}]},
+  {q:'Как ты отдыхаешь?',cards:[{img:'https://images.unsplash.com/photo-1551524559-8af4e6624178?w=700&q=80',lbl:'Активно',sub:'Горы, трекинг, велосипеды'},{img:'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=700&q=80',lbl:'Пассивно',sub:'Спа, лежак, тишина'}]},
+  {q:'Что важнее в поездке?',cards:[{img:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=700&q=80',lbl:'Еда и вкусы',sub:'Рестораны, рынки, фермы'},{img:'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=700&q=80',lbl:'Впечатления',sub:'Виноделие, закаты, атмосфера'}]},
+  {q:'Кто едет с тобой?',cards:[{img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&q=80',lbl:'Один или вдвоём',sub:'Соло или пара'},{img:'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=700&q=80',lbl:'Компания или семья',sub:'Друзья, дети'}]},
+  {q:'Какая атмосфера?',cards:[{img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=700&q=80',lbl:'Дикая природа',sub:'Без людей, без интернета'},{img:'https://images.unsplash.com/photo-1474722883778-792e7990302f?w=700&q=80',lbl:'Уют и комфорт',sub:'Хороший отель, всё включено'}]},
+];
+
+const BASE_TOUR=[
+  {day:1,ord:1,n:'Краснодар. Рынок Кирова',type:'Рынок',tags:['Гастро','Фермерское'],why:'Старт с лучшего фермерского рынка края — сыры, мёд и правильный настрой на поездку.',arrive:'09:00',drive:0,lat:45.040,lon:38.976,img:'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&q=80',url:'https://sutochno.ru/krasnodar'},
+  {day:1,ord:2,n:'Абрау-Дюрсо',type:'Винодельня',tags:['Вино','Природа'],why:'Ты выбирал вино и уединение — лучшего старта не придумать.',arrive:'13:00',drive:150,lat:44.708,lon:37.565,img:'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80',url:'https://sutochno.ru/novorossiysk'},
+  {day:2,ord:1,n:'Мысхако. Чёрные скалы',type:'Виноградник',tags:['Вино','Закат'],why:'Виноград над морем — утреннее место с панорамой на всю бухту.',arrive:'10:00',drive:40,lat:44.744,lon:37.671,img:'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800&q=80',url:'https://sutochno.ru/novorossiysk'},
+  {day:2,ord:2,n:'Долина Пшада',type:'Природный маршрут',tags:['Трекинг','Водопады'],why:'Нетронутые водопады — то, что ты искал в дикой природе.',arrive:'14:00',drive:90,lat:44.571,lon:38.058,img:'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&q=80',url:'https://sutochno.ru/gelendzhik'},
+  {day:3,ord:1,n:'Агроферма Привет',type:'Ферма',tags:['Гастро','Эко'],why:'Фермерский обед с видом на горы — еда как впечатление.',arrive:'11:00',drive:30,lat:44.551,lon:38.152,img:'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800&q=80',url:'https://sutochno.ru/gelendzhik'},
+  {day:3,ord:2,n:'Геленджик. Набережная',type:'Море / Город',tags:['Море','Прогулка'],why:'Финальный день у моря — кофе, рыбный рынок, закат.',arrive:'15:00',drive:25,lat:44.558,lon:38.077,img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',url:'https://sutochno.ru/gelendzhik'},
+];
+const SWAP_POOL=[
+  {n:'Дольмены Геленджика',type:'Культура',tags:['История','Мистика'],why:'Загадочные мегалиты — нетривиальная точка для любителей глубины.',arrive:'10:30',drive:35,lat:44.518,lon:38.021,img:'https://images.unsplash.com/photo-1562176566-e9afd27531d4?w=800&q=80'},
+  {n:'Горячий Ключ',type:'Термальный курорт',tags:['Термы','Релакс'],why:'Лечебные воды после активного дня — лучший способ восстановиться.',arrive:'11:00',drive:50,lat:44.63,lon:39.13,img:'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80'},
+  {n:'Красная Поляна',type:'Горный курорт',tags:['Горы','Вид'],why:'Канатная дорога и виды на хребет — один из лучших панорамных маршрутов.',arrive:'09:30',drive:70,lat:43.68,lon:40.21,img:'https://images.unsplash.com/photo-1551524559-8af4e6624178?w=800&q=80'},
+  {n:'Лагонаки',type:'Плато',tags:['Трекинг','Туман'],why:'Горное плато — мистика и виды.',arrive:'08:30',drive:80,lat:44.045,lon:39.892,img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80'},
+];
+const HOTELS=[
+  {n:'Villa Abrau Boutique',p:'4 800 ₽/ночь',r:'4.9',img:'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=200&q=80',url:'https://sutochno.ru/abrau-dyurso'},
+  {n:'Gelendzhik Bay House',p:'3 200 ₽/ночь',r:'4.7',img:'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=200&q=80',url:'https://sutochno.ru/gelendzhik'},
+  {n:'Эко-домик в Пшаде',p:'2 400 ₽/ночь',r:'4.8',img:'https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=200&q=80',url:'https://sutochno.ru/pshada'},
+];
+
+/* ════ STATE ════ */
+const S={
+  loggedIn:false,user:null,obDone:false,
+  wishlist:[],interactions:0,
+  authMode:'login',
+  feedCat:'all',feedLoaded:15,
+  transport:'car',group:'solo',budget:20000,acts:['gastro','eco'],
+  curPost:null,pmIdx:0,
+  vidInterval:null,vidSlide:0,vidImgs:[],
+  swapIdx:0, tourPts:[],
+};
+function getDB(){try{return JSON.parse(localStorage.getItem('kv_db')||'[]');}catch(e){return[];}}
+function saveDB(d){try{localStorage.setItem('kv_db',JSON.stringify(d));}catch(e){}}
+(function(){try{const sv=JSON.parse(localStorage.getItem('kv_s')||'{}');['loggedIn','user','obDone','wishlist','interactions'].forEach(k=>{if(sv[k]!==undefined)S[k]=sv[k];});}catch(e){}})();
+function saveS(){try{localStorage.setItem('kv_s',JSON.stringify({loggedIn:S.loggedIn,user:S.user,obDone:S.obDone,wishlist:S.wishlist,interactions:S.interactions}));}catch(e){}}
+
+/* ════ ROUTER ════ */
+let ymapsLoaded=false;
+function go(pg){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  const el=document.getElementById('pg-'+pg);if(el)el.classList.add('on');
+  window.scrollTo(0,0);
+  document.getElementById('nb').classList.toggle('dk',pg==='landing');
+  if(pg==='feed'){renderFilters();renderMasonry();}
+  if(pg==='tour-new')renderSpPrev();
+  if(pg==='tour-result')renderTourResult();
+  if(pg==='ob')initOb();
+  if(pg==='map')initFullMap();
+  if(pg==='places')renderPlaces();
+  if(pg==='profile')renderProfile();
+  updateNav();
+}
+function updateNav(){
+  const btn=document.getElementById('nav-btn');
+  const usr=document.getElementById('nav-user');
+  const postBtn=document.getElementById('nav-post-btn');
+  if(S.loggedIn&&S.user){
+    btn.style.display='none';usr.style.display='flex';
+    document.getElementById('nav-av').src=S.user.avatar;
+    document.getElementById('nav-nm').textContent=S.user.name.split(' ')[0];
+    if(postBtn) postBtn.style.display='';
+  }else{btn.style.display='';usr.style.display='none';btn.textContent='Войти';btn.onclick=()=>go('auth');}
+}
+
+/* ════ TOAST ════ */
+function toast(msg){
+  const c=document.getElementById('toasts');
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  c.appendChild(t);setTimeout(()=>t.remove(),2700);
+}
+
+/* ════ LANDING ════ */
+(function(){
+  document.getElementById('prev-grid').innerHTML=POSTS.slice(0,6).map(p=>`
+    <div class="pcard" onclick="go('ob')">
+      <img src="${p.img}" alt="${p.title}" loading="lazy">
+      <div class="pcard-i"><strong>${p.title}</strong>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">${p.tags.slice(0,2).map(t=>`<span class="pill dk">${t}</span>`).join('')}</div>
+      </div>
+    </div>`).join('');
+})();
+
+/* ════ AUTH ════ */
+function authTab(type,el){document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');if(type==='b'){clrAuth();toast('Бизнес-аккаунт — скоро');}}
+function toggleAuth(){
+  S.authMode=S.authMode==='login'?'register':'login';
+  const r=S.authMode==='register';
+  document.getElementById('auth-title').textContent=r?'Создать аккаунт':'Добро пожаловать';
+  document.getElementById('auth-sub').textContent=r?'Заполни форму для регистрации':'Войдите в аккаунт';
+  document.getElementById('albl').textContent=r?'Зарегистрироваться':'Войти';
+  document.getElementById('fg-cf').style.display=r?'block':'none';
+  document.getElementById('fg-nm').style.display=r?'block':'none';
+  document.getElementById('auth-sw').innerHTML=r?'Уже есть аккаунт? <a onclick="toggleAuth()">Войти</a>':'Нет аккаунта? <a onclick="toggleAuth()">Зарегистрироваться</a>';
+  clrAuth();
+}
+function clrAuth(){document.getElementById('aerr').classList.remove('on');document.getElementById('aok').classList.remove('on');['a-nm','a-em','a-pw','a-cf'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('err','ok');});}
+function showErr(m){const e=document.getElementById('aerr');e.textContent=m;e.classList.add('on');}
+function showOk(m){const e=document.getElementById('aok');e.textContent=m;e.classList.add('on');}
+function setLd(v){document.getElementById('abtn').classList.toggle('loading',v);}
+function doVk(){clrAuth();setLd(true);setTimeout(()=>{setLd(false);loginUser({name:'Алексей Краснов',email:'alex@vk.com',avatar:'https://i.pravatar.cc/80?u=vk42',provider:'vk'});},1400);}
+function doAuth(){
+  clrAuth();
+  const em=document.getElementById('a-em').value.trim();
+  const pw=document.getElementById('a-pw').value;
+  if(!em){document.getElementById('a-em').classList.add('err');showErr('Введите email');return;}
+  if(!pw||pw.length<6){document.getElementById('a-pw').classList.add('err');showErr('Пароль — минимум 6 символов');return;}
+  setLd(true);
+  if(S.authMode==='register'){
+    const nm=document.getElementById('a-nm').value.trim();
+    const cf=document.getElementById('a-cf').value;
+    if(!nm){document.getElementById('a-nm').classList.add('err');showErr('Введите имя');setLd(false);return;}
+    if(pw!==cf){document.getElementById('a-cf').classList.add('err');showErr('Пароли не совпадают');setLd(false);return;}
+    const db=getDB();
+    if(db.find(u=>u.email===em)){document.getElementById('a-em').classList.add('err');showErr('Email уже зарегистрирован');setLd(false);return;}
+    setTimeout(()=>{setLd(false);document.getElementById('a-em').classList.add('ok');showOk('Аккаунт создан');const u={name:nm,email:em,avatar:`https://i.pravatar.cc/80?u=${em}`,provider:'email'};db.push({...u,pw});saveDB(db);setTimeout(()=>loginUser(u),700);},1200);
+  }else{
+    const db=getDB();const found=db.find(u=>u.email===em&&u.pw===pw);
+    setTimeout(()=>{setLd(false);
+      if(!found){
+        if(!db.length){showOk('Вход выполнен (демо)');setTimeout(()=>loginUser({name:'Алексей Петров',email:em,avatar:`https://i.pravatar.cc/80?u=${em}`,provider:'email'}),600);return;}
+        document.getElementById('a-pw').classList.add('err');showErr('Неверный email или пароль');return;
+      }
+      document.getElementById('a-em').classList.add('ok');showOk('Добро пожаловать');setTimeout(()=>loginUser(found),600);
+    },1000);
+  }
+}
+function loginUser(u){S.loggedIn=true;S.user=u;saveS();updateNav();go(S.obDone?'feed':'ob');}
+function logout(){S.loggedIn=false;S.user=null;saveS();updateNav();go('landing');toast('До встречи');}
+
+/* ════ ONBOARDING ════ */
+let _obStep=0;
+function initOb(){_obStep=0;renderOb();}
+function renderOb(){
+  const step=_obStep;const total=OB_STEPS.length+1;
+  document.getElementById('ob-bar').style.width=Math.round(step/total*100)+'%';
+  document.getElementById('ob-lbl').textContent=`Шаг ${step+1} из ${total}`;
+  if(step<OB_STEPS.length){
+    const s=OB_STEPS[step];
+    document.getElementById('ob-q').textContent=s.q;
+    document.getElementById('ob-body').innerHTML=`<div class="ob-cards">${s.cards.map((c,i)=>`
+      <div class="ob-card" onclick="pickOb(${i})">
+        <img src="${c.img}" alt="${c.lbl}" loading="lazy">
+        <div class="ob-cov"><div class="ob-clbl">${c.lbl}</div><div class="ob-csub">${c.sub}</div></div>
+        <div class="ob-chk">&#10003;</div>
+      </div>`).join('')}</div>`;
+  }else{
+    document.getElementById('ob-q').textContent='Последние детали';
+    document.getElementById('ob-body').innerHTML=`<div class="ob-qs">
+      <div class="qb"><div class="ql">Состав группы</div><div class="qr">${['Соло','Пара','Семья','Друзья'].map(l=>`<span class="pt" onclick="togQ(this)">${l}</span>`).join('')}</div></div>
+      <div class="qb"><div class="ql">Бюджет на человека</div>
+        <input type="range" class="rng" min="3000" max="50000" value="15000" step="1000" oninput="this.nextElementSibling.textContent='до '+parseInt(this.value).toLocaleString('ru')+'\u00a0₽'">
+        <div class="rng-v">до 15 000 ₽</div></div>
+      <div class="qb"><div class="ql">Транспорт</div><div class="qr">
+        <span class="pt" onclick="togQ(this)">На машине</span>
+        <span class="pt" onclick="togQ(this)">Без машины</span>
+      </div></div>
+      <div style="margin-top:30px"><button class="bp bfull" onclick="finishOb()">Готово — смотреть ленту</button></div>
+    </div>`;
+  }
+}
+function pickOb(i){document.querySelectorAll('.ob-card').forEach(c=>c.classList.remove('sel'));document.querySelectorAll('.ob-card')[i].classList.add('sel');setTimeout(()=>{_obStep++;renderOb();},480);}
+function togQ(el){el.closest('.qr').querySelectorAll('.pt').forEach(p=>p.classList.remove('on'));el.classList.add('on');}
+function finishOb(){
+  // Validate: at least group and transport must be selected
+  const grpSel=document.querySelector('.qr .pt.on');
+  if(!grpSel){toast('Выбери состав группы');return;}
+  S.obDone=true;S.loggedIn=true;saveS();go('feed');toast('Лента готова — листай');
+}
+
+/* ════ FEED ════ */
+function renderFilters(){
+  const cats=[{k:'all',l:'Все'},{k:'gastro',l:'Гастро'},{k:'wine',l:'Вино'},{k:'nature',l:'Природа'},{k:'active',l:'Активный'},{k:'culture',l:'Культурный'},{k:'wellness',l:'Релакс'}];
+  document.getElementById('ffilters').innerHTML=cats.map(c=>`<span class="pf ${S.feedCat===c.k?'on':''}" onclick="setCat('${c.k}')">${c.l}</span>`).join('');
+}
+function setCat(c){S.feedCat=c;S.feedLoaded=15;renderFilters();renderMasonry();}
+function renderMasonry(){
+  const allPosts=getAllPosts();
+  const filtered=S.feedCat==='all'?allPosts:allPosts.filter(p=>p.cat===S.feedCat);
+  const vis=filtered.slice(0,S.feedLoaded);
+  const hm={tall:'aspect-ratio:3/4',medium:'aspect-ratio:4/5',short:'aspect-ratio:1/1'};
+  let html='';
+  if(S.interactions>=3&&S.loggedIn){
+    html+=`<div class="smart-b"><div class="sbt"><strong>Сохранил ${S.interactions} ${S.interactions===1?'место':S.interactions<5?'места':'мест'}</strong><span>Самое время создать маршрут</span></div><button class="sbtn" onclick="go('tour-new')">Создать тур</button></div>`;
+  }
+  html+=vis.map((p,idx)=>`
+    <div class="mc" onclick="openPost(${p.id})">
+      <img src="${p.img}" alt="${p.title}" style="${hm[p.h]||'aspect-ratio:4/5'}" loading="lazy">
+      <button class="csave ${S.wishlist.includes(p.id)?'sv':''}" onclick="event.stopPropagation();togSave(${p.id})" title="Сохранить">
+        ${S.wishlist.includes(p.id)?'&#10084;':'&#9825;'}
+      </button>
+      <div class="mci">
+        <div class="mct">${p.title}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px">${p.tags.slice(0,2).map(t=>`<span class="pill dk">${t}</span>`).join('')}</div>
+        <div class="mca"><img src="${p.isUserPost&&p.userId===S.user?.email&&S.user?.avatar?S.user.avatar:'https://i.pravatar.cc/40?u='+p.id}" alt="${p.isUserPost&&p.userId===S.user?.email?S.user?.name||p.author:p.author}"><span>${p.isUserPost&&p.userId===S.user?.email?S.user?.name||p.author:p.author}</span>${p.biz?'<span class="pill" style="font-size:.62rem;padding:2px 6px">Место</span>':p.isUserPost&&p.userId===S.user?.email?'<span class="pill" style="font-size:.62rem;padding:2px 6px;background:rgba(122,140,110,.12);color:var(--sage)">Мой пост</span>':''}</div>
+      </div>
+    </div>`).join('');
+  document.getElementById('masonry').innerHTML=html;
+}
+function togSave(id){
+  const i=S.wishlist.indexOf(id);
+  if(i===-1){
+    S.wishlist.push(id);
+    // Only count first-time saves as interactions
+    if(!S._savedOnce) S._savedOnce={};
+    if(!S._savedOnce[id]){ S.interactions++; S._savedOnce[id]=true; }
+    saveS();renderMasonry();toast('Место сохранено');
+  }else{
+    S.wishlist.splice(i,1);saveS();renderMasonry();toast('Убрано из сохранённых');
+  }
+}
+function loadMore(){S.feedLoaded+=8;renderMasonry();}
+
+/* ════ POST MODAL ════ */
+function openPost(id){
+  const p=getAllPosts().find(x=>x.id===id);if(!p)return;
+  S.curPost=p;S.pmIdx=0;
+  document.getElementById('pm-ttl').textContent=p.title;
+  document.getElementById('pm-tp').textContent=p.type;
+  document.getElementById('pm-tags').innerHTML=p.tags.map(t=>`<span class="pill">${t}</span>`).join('');
+  document.getElementById('pm-desc').textContent=p.desc;
+  document.getElementById('pm-av').src=p.isUserPost&&p.userId===S.user?.email&&S.user?.avatar?S.user.avatar:`https://i.pravatar.cc/60?u=${p.id}`;
+  document.getElementById('pm-an').textContent=p.isUserPost&&p.userId===S.user?.email?S.user.name:p.author;
+  document.getElementById('pm-at').textContent=p.isUserPost?(p.userId===S.user?.email?'Ваш пост':'Путешественник'):p.biz?'Представитель бизнеса':'Путешественник';
+  renderPmSlides();
+  document.getElementById('post-modal').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function renderPmSlides(){
+  const p=S.curPost;if(!p)return;
+  document.getElementById('pm-img').src=p.imgs[S.pmIdx];
+  document.getElementById('pm-dots').innerHTML=p.imgs.map((_,i)=>`<div class="pm-dot ${i===S.pmIdx?'on':''}" onclick="pmGo(${i})"></div>`).join('');
+}
+function pmSlide(d){if(!S.curPost)return;S.pmIdx=(S.pmIdx+d+S.curPost.imgs.length)%S.curPost.imgs.length;renderPmSlides();}
+function pmGo(i){S.pmIdx=i;renderPmSlides();}
+function closePost(){document.getElementById('post-modal').classList.remove('on');document.body.style.overflow='';}
+function saveFromPost(){
+  if(!S.curPost)return;
+  const id=S.curPost.id;
+  if(!S.wishlist.includes(id)){
+    S.wishlist.push(id);
+    if(!S._savedOnce) S._savedOnce={};
+    if(!S._savedOnce[id]){ S.interactions++; S._savedOnce[id]=true; }
+    saveS();toast('Место сохранено');
+  }else toast('Уже сохранено');
+}
+function openVidFromPost(){if(!S.curPost)return;closePost();openVid(S.curPost.title,S.curPost.imgs,S.curPost.tags,'https://sutochno.ru');}
+
+/* ════ VIDEO MODAL ════ */
+function openVid(name,imgs,tags,url){
+  document.getElementById('vloc').textContent=name;
+  document.getElementById('vtags').innerHTML=(Array.isArray(tags)?tags:[]).map(t=>`<span class="pill">${t}</span>`).join('');
+  document.getElementById('vbook').href=url||'#';
+  S.vidSlide=0;S.vidImgs=imgs;
+  if(S.vidInterval){clearInterval(S.vidInterval);S.vidInterval=null;}
+  document.getElementById('vsli').innerHTML=imgs.map((src,i)=>`<div class="vsl" style="transform:translateX(${i*100}%)"><img src="${src}" alt="" loading="lazy"></div>`).join('');
+  renderVDots();
+  let prog=0;document.getElementById('vpbar').style.width='0%';
+  S.vidInterval=setInterval(()=>{
+    prog+=100/40;document.getElementById('vpbar').style.width=Math.min(prog,100)+'%';
+    if(prog>=100){prog=0;S.vidSlide=(S.vidSlide+1)%imgs.length;document.querySelectorAll('.vsl').forEach((s,i)=>{s.style.transform=`translateX(${(i-S.vidSlide)*100}%)`;});renderVDots();}
+  },100);
+  document.getElementById('vid-modal').classList.add('on');document.body.style.overflow='hidden';
+}
+function renderVDots(){document.getElementById('vdots').innerHTML=S.vidImgs.map((_,i)=>`<div class="vdot ${i===S.vidSlide?'on':''}"></div>`).join('');}
+function closeVid(){if(S.vidInterval){clearInterval(S.vidInterval);S.vidInterval=null;}document.getElementById('vid-modal').classList.remove('on');document.body.style.overflow='';}
+
+/* ════ YANDEX MAPS LOADER ════ */
+function loadYmaps(cb){
+  if(ymapsLoaded){ymaps.ready(cb);return;}
+  if(document.getElementById('ys')){
+    // Already loading, wait
+    const wait=setInterval(()=>{if(ymapsLoaded){clearInterval(wait);ymaps.ready(cb);}},100);return;
+  }
+  const s=document.createElement('script');s.id='ys';
+  // Using apikey parameter for full routing support
+  s.src=`https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=${YANDEX_API_KEY}&load=package.full`;
+  s.onload=()=>{ymapsLoaded=true;ymaps.ready(cb);};
+  document.head.appendChild(s);
+}
+
+/* ════ FULL MAP (places with avatars) ════ */
+let mapObj=null;
+function initFullMap(){
+  document.getElementById('map-full').innerHTML='';mapObj=null;
+  loadYmaps(buildFullMap);
+}
+function buildFullMap(){
+  mapObj=new ymaps.Map('map-full',{center:[44.7,38.3],zoom:8,controls:['zoomControl']});
+  mapObj.behaviors.disable('scrollZoom');
+
+  // ── Draw KNOWN LOCATIONS with type icons ──
+  LOCATIONS.forEach(loc=>{
+    const color=LOC_COLORS[loc.type]||'#C4603B';
+    const icon=LOC_ICONS[loc.type]||LOC_ICONS.culture;
+    const layout=ymaps.templateLayoutFactory.createClass(
+      '<div title="'+loc.name+'" style="'
+        +'width:40px;height:40px;border-radius:50%;background:'+color+';'
+        +'display:flex;align-items:center;justify-content:center;'
+        +'cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.3);'
+        +'border:2.5px solid #fff;transition:transform .2s;color:#fff;'
+        +'font-size:10px;line-height:1;"'
+        +' onmouseover="this.style.transform=\'scale(1.18)\'"'
+        +' onmouseout="this.style.transform=\'scale(1)\'">'
+        +icon
+      +'</div>'
+    );
+    const pm=new ymaps.Placemark([loc.lat,loc.lon],{},{
+      iconLayout:layout,
+      iconShape:{type:'Circle',coordinates:[20,20],radius:20}
+    });
+    pm.events.add('click',()=>openLocModal(loc.id));
+    mapObj.geoObjects.add(pm);
+  });
+
+  // ── Draw USER POSTS without a known location — avatar pin ──
+  const allPosts=getAllPosts();
+  allPosts.forEach(p=>{
+    if(!p.isUserPost) return;          // static POSTS are shown via location pins
+    if(!p.lat||!p.lon) return;
+    if(p.locId) return;                // posts tied to a location shown inside location modal
+    const isMyPost=S.user&&p.userId===S.user.email;
+    const avatarSrc=isMyPost&&S.user.avatar?S.user.avatar:'https://i.pravatar.cc/42?u='+p.id;
+    const borderColor=isMyPost?'#7A8C6E':'#C4603B';
+    const layout=ymaps.templateLayoutFactory.createClass(
+      '<div title="'+p.title+'" style="'
+        +'width:38px;height:38px;border-radius:50%;border:3px solid '+borderColor+';'
+        +'overflow:hidden;cursor:pointer;background:#fff;'
+        +'box-shadow:0 3px 10px rgba(0,0,0,.25);transition:transform .2s;"'
+        +' onmouseover="this.style.transform=\'scale(1.15)\'"'
+        +' onmouseout="this.style.transform=\'scale(1)\'">'
+        +'<img src="'+avatarSrc+'" style="width:100%;height:100%;object-fit:cover">'
+      +'</div>'
+    );
+    const pm=new ymaps.Placemark([p.lat,p.lon],{},{
+      iconLayout:layout,
+      iconShape:{type:'Circle',coordinates:[19,19],radius:19}
+    });
+    pm.events.add('click',()=>openPost(p.id));
+    mapObj.geoObjects.add(pm);
+  });
+}
+
+/* ════ TOUR MAP — Yandex Router with transport mode ════ */
+let tourMap=null;
+function sortedPts(){return [...S.tourPts].sort((a,b)=>a.day!==b.day?a.day-b.day:a.ord-b.ord);}
+
+function initTourMap(){
+  document.getElementById('ymap').innerHTML='';tourMap=null;
+  loadYmaps(buildTourMap);
+}
+function buildTourMap(){
+  const pts=sortedPts();
+  tourMap=new ymaps.Map('ymap',{
+    center:[pts[0].lat,pts[0].lon],zoom:9,
+    controls:['zoomControl','geolocationControl']
+  });
+  tourMap.behaviors.disable('scrollZoom');
+  drawRoute(pts);
+}
+
+function drawRoute(pts){
+  if(!tourMap)return;
+  tourMap.geoObjects.removeAll();
+
+  const waypoints=pts.map(p=>[p.lat,p.lon]);
+
+  // routingMode: 'auto' for car, 'masstransit' for public transport
+  const routingMode=S.transport==='car'?'auto':'masstransit';
+
+  showRouteStatus(`Строим маршрут (${routingMode==='auto'?'на машине':'общественный транспорт'})...`);
+
+  ymaps.route(waypoints,{
+    routingMode,
+    mapStateAutoApply:false,
+    // For car: avoid ferries, prefer highways
+    ...(routingMode==='auto'?{avoidTrafficJams:true}:{})
+  }).then(route=>{
+    hideRouteStatus();
+
+    // Style each segment of the route path
+    const paths=route.getPaths();
+    paths.each(path=>{
+      path.getSegments().each(seg=>{
+        seg.options.set({
+          strokeColor:'#C4603B',
+          strokeWidth:4,
+          strokeOpacity:.8,
+          ...(routingMode==='masstransit'?{strokeStyle:'dot'}:{})
+        });
+      });
+    });
+
+    tourMap.geoObjects.add(route);
+
+    // Add numbered placemarks on top of the route
+    pts.forEach((p,i)=>{
+      const pm=new ymaps.Placemark([p.lat,p.lon],
+        {balloonContent:`<strong>${p.n}</strong><br><span style="color:#7A6E65;font-size:12px">${p.type}</span>`},
+        {preset:'islands#redStretchyIcon',iconColor:'#C4603B',iconContent:i+1}
+      );
+      tourMap.geoObjects.add(pm);
+    });
+
+    // Fit map to show full route
+    const bounds=tourMap.geoObjects.getBounds();
+    if(bounds)tourMap.setBounds(bounds,{checkZoomRange:true,zoomMargin:60});
+
+    // Show travel time from route
+    const totalTime=route.getJamsTime ? route.getJamsTime() : route.getTime();
+    if(totalTime){
+      const mins=Math.round(totalTime/60);
+      toast(`Маршрут построен · ${mins > 60 ? Math.floor(mins/60)+'ч '+mins%60+'мин' : mins+' мин'} в пути`);
+    }
+  }).catch(err=>{
+    console.warn('Routing failed, fallback to polyline:', err);
+    hideRouteStatus();
+    // Fallback: dashed polyline
+    const coords=pts.map(p=>[p.lat,p.lon]);
+    const poly=new ymaps.Polyline(coords,{},{strokeColor:'#C4603B',strokeWidth:4,strokeOpacity:.65,strokeStyle:'dash'});
+    tourMap.geoObjects.add(poly);
+    pts.forEach((p,i)=>{
+      const pm=new ymaps.Placemark([p.lat,p.lon],{balloonContent:`<strong>${p.n}</strong>`},{preset:'islands#redStretchyIcon',iconColor:'#C4603B',iconContent:i+1});
+      tourMap.geoObjects.add(pm);
+    });
+    const bounds=tourMap.geoObjects.getBounds();
+    if(bounds)tourMap.setBounds(bounds,{checkZoomRange:true,zoomMargin:60});
+  });
+}
+
+function showRouteStatus(msg){const el=document.getElementById('route-status');if(el){el.textContent=msg;el.classList.add('on');}}
+function hideRouteStatus(){const el=document.getElementById('route-status');if(el)el.classList.remove('on');}
+
+/* ════ SWAP — rebuild route with new point ════ */
+function swapPoint(day,ord){
+  const cand=SWAP_POOL[S.swapIdx%SWAP_POOL.length];S.swapIdx++;
+  const idx=S.tourPts.findIndex(p=>p.day===day&&p.ord===ord);
+  if(idx===-1)return;
+  S.tourPts[idx]={...S.tourPts[idx],...cand,day,ord};
+  const card=document.getElementById(`tpc-${day}-${ord}`);
+  if(card){
+    card.style.cssText='opacity:0;transform:scale(.95);transition:all .26s';
+    setTimeout(()=>{
+      card.querySelector('.tpc-img').src=cand.img;
+      card.querySelector('.tpc-nm').textContent=cand.n;
+      card.querySelector('.tpc-tp').textContent=cand.type;
+      card.querySelector('.tpc-tgs').innerHTML=cand.tags.map(t=>`<span class="pill">${t}</span>`).join('');
+      card.querySelector('.tpc-why').textContent=cand.why;
+      card.style.cssText='opacity:1;transform:scale(1);transition:all .26s';
+      drawRoute(sortedPts());
+    },260);
+  }
+}
+
+/* ════ TOUR RESULT RENDER ════ */
+function renderTourResult(){
+  if(!S.tourPts.length)S.tourPts=BASE_TOUR.map(p=>({...p}));
+  const byDay={};S.tourPts.forEach(p=>{if(!byDay[p.day])byDay[p.day]=[];byDay[p.day].push(p);});
+  const modeLabel=S.transport==='car'?'На машине':'Без машины';
+  let html=`
+    <div style="margin-bottom:16px">
+      <div class="ttitle">Маршрут${S.user?' '+S.user.name.split(' ')[0]+'а':''}</div>
+      <div class="tmeta">
+        <span class="tmi">10–13 мая 2026</span>
+        <span class="tmi" style="background:rgba(28,20,16,.05);border-radius:100px;padding:3px 10px">от 18 000 ₽/чел</span>
+        <span class="tmi" style="background:rgba(28,20,16,.05);border-radius:100px;padding:3px 10px">${S.tourPts.length} точек</span>
+      </div>
+      <div class="transport-badge">${modeLabel}</div>
+      <div id="route-status" class="route-status"></div>
+      <div class="wstrip">
+        ${[{d:'10.05',i:'ясно',t:'+22'},{d:'11.05',i:'облачно',t:'+19'},{d:'12.05',i:'ясно',t:'+24'},{d:'13.05',i:'ясно',t:'+21'}].map(w=>`<div class="wday"><div style="font-size:.7rem;color:var(--muted)">${w.i}</div><div class="wt">${w.t}°</div><div>${w.d}</div></div>`).join('')}
+      </div>
+    </div>`;
+  for(const[day,pts] of Object.entries(byDay)){
+    html+=`<div class="dlbl">День ${day}</div>`;
+    pts.forEach(p=>{
+      html+=`<div class="tpc" id="tpc-${p.day}-${p.ord}">
+        <img class="tpc-img" src="${p.img}" alt="${p.n}" loading="lazy" onclick="openVid('${p.n}',['${p.img}'],${JSON.stringify(p.tags)},'${p.url}')">
+        <div class="tpc-b">
+          <div class="tpc-nm">${p.n}</div>
+          <div class="tpc-tp">${p.type}</div>
+          <div class="tpc-tgs">${p.tags.map(t=>`<span class="pill">${t}</span>`).join('')}</div>
+          <div class="tpc-why">${p.why}</div>
+          <div class="tpc-time"><span>${p.arrive}</span>${p.drive>0?`<span>${p.drive} мин от предыдущей</span>`:''}</div>
+          <div class="tpc-acts">
+            <button class="bswap" onclick="swapPoint(${p.day},${p.ord})">Заменить</button>
+            <button class="bvid" onclick="openVid('${p.n}',['${p.img}'],${JSON.stringify(p.tags)},'${p.url}')">Видео-визит</button>
+          </div>
+        </div>
+      </div>`;
+    });
+  }
+  html+=`<div class="hotels-b" id="hotels-b"><h3>Где остановиться</h3>
+    ${HOTELS.map(h=>`<a class="hcard" href="${h.url}" target="_blank"><img src="${h.img}" alt="${h.n}"><div class="hcard-i"><div class="hcard-nm">${h.n}</div><div class="hcard-p">${h.p}</div><div class="hcard-r">${h.r} из 5</div></div></a>`).join('')}
+  </div>`;
+  document.getElementById('tlist').innerHTML=html;
+  initTourMap();
+}
+
+/* ════ TOUR FORM ════ */
+function renderSpPrev(){
+  const saved=getAllPosts().filter(p=>S.wishlist.includes(p.id));
+  const prev=document.getElementById('sp-prev');
+  const cnt=document.getElementById('sp-count');
+  if(!saved.length){
+    if(prev) prev.innerHTML='<span style="font-size:.78rem;color:var(--muted)">Нет сохранённых мест</span>';
+    if(cnt) cnt.textContent='';
+    return;
+  }
+  if(prev) prev.innerHTML=saved.slice(0,3).map(p=>`<div class="sp-chip"><img src="${p.img}" alt="${p.title}"><span>${p.title}</span></div>`).join('');
+  if(cnt) cnt.textContent=`${saved.length} ${saved.length===1?'место':saved.length<5?'места':'мест'} будут учтены при генерации`;
+}
+function selGrp(el){document.querySelectorAll('#grp-pills .pt').forEach(p=>p.classList.remove('on'));el.classList.add('on');S.group=el.dataset.g;document.getElementById('child-age').style.display=el.dataset.g==='family'?'block':'none';}
+function selTrans(t){S.transport=t;document.getElementById('tc-car').classList.toggle('on',t==='car');document.getElementById('tc-pub').classList.toggle('on',t==='public');}
+function togChip(el){el.classList.toggle('on');const a=el.dataset.a,arr=S.acts,i=arr.indexOf(a);if(i===-1)arr.push(a);else arr.splice(i,1);}
+function onBudget(el){const v=parseInt(el.value);S.budget=v;document.getElementById('bcur').textContent='до '+v.toLocaleString('ru')+' ₽';document.getElementById('bfill').style.width=((v-3000)/(50000-3000)*100)+'%';}
+(function(){const el=document.getElementById('bsli');if(el)document.getElementById('bfill').style.width=((parseInt(el.value)-3000)/(50000-3000)*100)+'%';})();
+
+const LMSGS=['Анализируем предпочтения...','Подбираем лучшие локации...','Проверяем погоду на даты...','Строим оптимальный маршрут...','Ищем жильё рядом с маршрутом...','Финальные штрихи...'];
+function generateTour(){
+  const btn=document.getElementById('gen-btn');btn.classList.add('loading');document.getElementById('gen-lbl').textContent='Строим маршрут...';
+  document.getElementById('loader').classList.add('on');
+  let i=0;const t=setInterval(()=>{document.getElementById('ltxt').textContent=LMSGS[i%LMSGS.length];i++;},2000);
+  setTimeout(()=>{
+    clearInterval(t);document.getElementById('loader').classList.remove('on');
+    btn.classList.remove('loading');document.getElementById('gen-lbl').textContent='Создать маршрут';
+    S.tourPts=BASE_TOUR.map(p=>({...p}));
+    go('tour-result');
+  },11000);
+}
+
+/* ════ PLACES ════ */
+function renderPlaces(){
+  const saved=POSTS.filter(p=>S.wishlist.includes(p.id));
+  document.getElementById('places-cnt').textContent=saved.length===0?'Нет сохранённых мест':`${saved.length} ${saved.length===1?'место':saved.length<5?'места':'мест'} сохранено`;
+  if(!saved.length){
+    document.getElementById('places-list').innerHTML=`<div class="empty"><div class="ico">Места</div><p>Ты ещё не сохранил ни одного места.<br>Листай ленту и сохраняй понравившиеся.</p><br><button class="bp" onclick="go('feed')" style="margin:0 auto;display:flex">Перейти в ленту</button></div>`;
+    return;
+  }
+  document.getElementById('places-list').innerHTML=saved.map(p=>`
+    <div class="prow" onclick="openPost(${p.id})">
+      <img src="${p.img}" alt="${p.title}" style="width:88px;object-fit:cover;flex-shrink:0">
+      <div class="prow-i">
+        <div class="pr-nm">${p.title}</div>
+        <div class="pr-tp">${p.type}</div>
+        <div class="pr-tgs">${p.tags.slice(0,3).map(t=>`<span class="pill dk">${t}</span>`).join('')}</div>
+        <div class="pr-acts">
+          <button class="pr-rm" onclick="event.stopPropagation();togSave(${p.id});renderPlaces()">Убрать</button>
+          <button class="bp" style="font-size:.74rem;padding:4px 11px" onclick="event.stopPropagation();go('tour-new')">В маршрут</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+/* ════ PROFILE ════ */
+function renderProfile(){
+  var wrap=document.getElementById('prw');
+  if(!S.loggedIn||!S.user){
+    wrap.innerHTML='<div style="text-align:center;padding:76px 24px"><h3 style="margin-bottom:7px">Войди, чтобы видеть профиль</h3><p style="color:var(--muted);margin-bottom:22px;font-size:.88rem">Здесь будут твоя статистика, предпочтения и история туров.</p><button class="bp" onclick="go(\'auth\')">Войти / Зарегистрироваться</button></div>';
+    return;
+  }
+  var u=S.user;
+  var vec=[{t:'Природа',v:.82},{t:'Вино',v:.74},{t:'Гастро',v:.65},{t:'Активный',v:.58},{t:'Релакс',v:.41},{t:'Культура',v:.35}];
+
+  // Build vector pills
+  var vecHtml='';
+  vec.forEach(function(v){
+    vecHtml+='<div class="vp"><span>'+v.t+'</span><div class="vbar"><div class="vfill" style="width:'+Math.round(v.v*100)+'%"></div></div><span style="font-size:.73rem;color:var(--muted)">'+Math.round(v.v*100)+'%</span></div>';
+  });
+
+  // Build my posts section
+  var myPosts=getUserPosts().filter(function(p){return p.userId===u.email;});
+  var postsHtml='';
+  if(!myPosts.length){
+    postsHtml='<div style="text-align:center;padding:28px 0;color:var(--muted);font-size:.88rem">'
+      +'<div style="font-style:italic;font-size:1.1rem;color:var(--terra);margin-bottom:8px">Нет публикаций</div>'
+      +'Поделись интересным местом — оно появится здесь, в ленте и на карте.'
+      +'<br><button class="bp" onclick="go(\'feed\');setTimeout(openCreatePost,100)" style="margin:16px auto 0;display:flex;font-size:.82rem;padding:9px 20px">Создать пост</button>'
+      +'</div>';
+  } else {
+    postsHtml='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px">';
+    myPosts.slice(-9).reverse().forEach(function(p){
+      postsHtml+='<div style="border-radius:var(--rs);overflow:hidden;cursor:pointer;aspect-ratio:1;position:relative" onclick="openPost('+p.id+')">'
+        +'<img src="'+p.img+'" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy">'
+        +'<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(28,20,16,.6),transparent);padding:4px 6px;font-size:.68rem;color:#fff;font-weight:600;line-height:1.2">'+p.title+'</div>'
+        +'</div>';
+    });
+    postsHtml+='<div style="border-radius:var(--rs);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;aspect-ratio:1;cursor:pointer;color:var(--muted);flex-direction:column;gap:3px;font-size:.71rem" onclick="go(\'feed\');setTimeout(openCreatePost,100)"><span style="font-size:1.4rem">+</span>Добавить</div>';
+    postsHtml+='</div>';
+  }
+
+  wrap.innerHTML=
+    '<div class="pr-hero">'
+      +'<div class="pr-av">'
+        +'<img src="'+u.avatar+'" alt="'+u.name+'" id="prof-av-img">'
+        +'<div class="pr-av-e" onclick="document.getElementById(\'av-file\').click()" title="Изменить фото">&#9998;</div>'
+        +'<input type="file" id="av-file" accept="image/*" style="display:none" onchange="changeAvatar(this)">'
+      +'</div>'
+      +'<div class="pr-info">'
+        +'<div class="pr-name">'+u.name+'</div>'
+        +'<div class="pr-email">'+u.email+'</div>'
+        +'<div class="pr-ptags"><span class="pill">Природа</span><span class="pill">Вино</span><span class="pill">Гастро</span></div>'
+        +'<div class="pr-btns">'
+          +'<button class="bs" style="font-size:.78rem;padding:7px 14px" onclick="showEdit()">Редактировать</button>'
+          +'<button class="bs" style="font-size:.78rem;padding:7px 14px;border-color:rgba(229,62,62,.28);color:#C53030" onclick="logout()">Выйти</button>'
+        +'</div>'
+      +'</div>'
+    +'</div>'
+    +'<div class="edit-form" id="edit-form">'
+      +'<div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Редактировать профиль</div>'
+      +'<div class="fg"><label>Имя</label><input class="fi" id="e-nm" value="'+u.name+'"></div>'
+      +'<div class="fg"><label>Email</label><input class="fi" id="e-em" value="'+u.email+'" type="email"></div>'
+      +'<div style="display:flex;gap:9px;margin-top:4px">'
+        +'<button class="bp" style="font-size:.84rem;padding:9px 18px" onclick="saveEdit()">Сохранить</button>'
+        +'<button class="bs" style="font-size:.84rem;padding:8px 14px" onclick="hideEdit()">Отмена</button>'
+      +'</div>'
+    +'</div>'
+    +'<div class="pr-stats">'
+      +'<div class="stat"><div class="stat-n">'+S.wishlist.length+'</div><div class="stat-l">Сохранённых мест</div></div>'
+      +'<div class="stat"><div class="stat-n">'+S.interactions+'</div><div class="stat-l">Взаимодействий</div></div>'
+      +'<div class="stat"><div class="stat-n">2</div><div class="stat-l">Туров создано</div></div>'
+    +'</div>'
+    +'<div class="pr-sec">'
+      +'<div class="pr-sec-hd">Вкусовой профиль</div>'
+      +'<div class="vg">'+vecHtml+'</div>'
+    +'</div>'
+    +'<div class="pr-sec">'
+      +'<div class="pr-sec-hd">История туров</div>'
+      +'<div class="thr" onclick="go(\'tour-result\')"><img src="https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=200&q=80" alt=""><div class="thr-i"><div class="thr-t">Абрау-Дюрсо — Пшада — Геленджик</div><div class="thr-m">10–13 мая 2026 · 5 точек · от 18 000 ₽</div></div></div>'
+      +'<div class="thr" onclick="go(\'tour-result\')"><img src="https://images.unsplash.com/photo-1551524559-8af4e6624178?w=200&q=80" alt=""><div class="thr-i"><div class="thr-t">Красная Поляна — Горячий Ключ</div><div class="thr-m">15–17 апреля 2026 · 3 точки · от 12 000 ₽</div></div></div>'
+    +'</div>'
+    +'<div class="pr-sec">'
+      +'<div class="pr-sec-hd">Публикации</div>'
+      +postsHtml
+    +'</div>';
+}
+function showEdit(){document.getElementById('edit-form').classList.add('on');}
+function hideEdit(){document.getElementById('edit-form').classList.remove('on');}
+function saveEdit(){
+  const nm=document.getElementById('e-nm').value.trim();
+  const em=document.getElementById('e-em').value.trim();
+  if(!nm||!em){toast('Заполни все поля');return;}
+  S.user={...S.user,name:nm,email:em};saveS();hideEdit();renderProfile();updateNav();toast('Профиль обновлён');
+}
+
+function scrollHotels(){const el=document.getElementById('hotels-b');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+function openNav(){
+  const pts=sortedPts();
+  if(!pts.length){toast('Нет точек маршрута');return;}
+  const first=pts[0];const last=pts[pts.length-1];
+  // Build waypoints string for all intermediate points
+  const via=pts.slice(1,-1).map(p=>`${p.lat},${p.lon}`).join('~');
+  // Yandex Navigator deeplink (mobile)
+  const navUrl=`yandexnavi://build_route_on_map?lat_from=${first.lat}&lon_from=${first.lon}&lat_to=${last.lat}&lon_to=${last.lon}`;
+  // Yandex Maps web fallback
+  const allCoords=pts.map(p=>`${p.lat},${p.lon}`).join('~');
+  const webUrl=`https://yandex.ru/maps/?rtext=${pts.map(p=>`${p.lat},${p.lon}`).join('~')}&rtt=auto`;
+  // Try deeplink, fallback to web after 1.5s if not handled
+  const start=Date.now();
+  window.location.href=navUrl;
+  setTimeout(()=>{
+    if(Date.now()-start<2000) window.open(webUrl,'_blank');
+  },1500);
+  toast('Открываем маршрут...');
+}
+function shareTour(){navigator.clipboard?.writeText(location.href+'#tour').then(()=>toast('Ссылка скопирована')).catch(()=>toast('Ссылка скопирована'));if(!navigator.clipboard)toast('Ссылка скопирована');}
+
+/* ════ USER POSTS ════ */
+// User-created posts stored in S.userPosts and persisted
+function getUserPosts(){try{return JSON.parse(localStorage.getItem('kv_posts')||'[]');}catch(e){return[];}}
+function saveUserPosts(p){try{localStorage.setItem('kv_posts',JSON.stringify(p));}catch(e){}}
+
+// Merge user posts into feed at load time
+function getAllPosts(){
+  const up=getUserPosts();
+  // User posts go first (newest first) so they appear at top of feed
+  return [...up.slice().reverse(),...POSTS];
+}
+
+/* ════ AVATAR CHANGE ════ */
+function changeAvatar(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    S.user={...S.user,avatar:e.target.result};
+    saveS();
+    // Update all avatar references
+    const navAv=document.getElementById('nav-av');
+    if(navAv) navAv.src=S.user.avatar;
+    const profImg=document.getElementById('prof-av-img');
+    if(profImg) profImg.src=S.user.avatar;
+    // Update user posts author avatar in display
+    renderMasonry();
+    toast('Фото профиля обновлено');
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+
+/* ════ POST MINI-MAP ════ */
+let _postMap=null;let _postMarker=null;
+
+function initPostMiniMap(){
+  if(!window.ymaps){loadYmaps(initPostMiniMap);return;}
+  const container=document.getElementById('post-minimap');
+  if(!container)return;
+  // Clear hint
+  const hint=document.getElementById('minimap-hint');
+  if(hint)hint.style.display='none';
+
+  ymaps.ready(()=>{
+    if(_postMap){_postMap.destroy();_postMap=null;_postMarker=null;}
+    _postMap=new ymaps.Map('post-minimap',{
+      center:[44.7,38.3],zoom:8,
+      controls:['zoomControl','searchControl']
+    });
+    // Click to place marker
+    _postMap.events.add('click',e=>{
+      const coords=e.get('coords');
+      setPostCoord(coords[0],coords[1]);
+    });
+    // If geolocation available, center on user
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(pos=>{
+        if(_postMap) _postMap.setCenter([pos.coords.latitude,pos.coords.longitude],12);
+      },()=>{});
+    }
+  });
+}
+
+function setPostCoord(lat,lon){
+  document.getElementById('post-lat').value=lat;
+  document.getElementById('post-lon').value=lon;
+  const display=document.getElementById('post-coord-display');
+  const text=document.getElementById('post-coord-text');
+  if(display) display.style.display='flex';
+  if(text) text.textContent=`${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+  // Place/move marker
+  if(!_postMap)return;
+  if(_postMarker){_postMap.geoObjects.remove(_postMarker);}
+  _postMarker=new ymaps.Placemark([lat,lon],{},{
+    preset:'islands#redDotIcon',iconColor:'#C4603B'
+  });
+  _postMap.geoObjects.add(_postMarker);
+  _postMap.panTo([lat,lon],{duration:300});
+}
+
+function clearPostCoord(){
+  document.getElementById('post-lat').value='';
+  document.getElementById('post-lon').value='';
+  const display=document.getElementById('post-coord-display');
+  if(display) display.style.display='none';
+  if(_postMarker&&_postMap){_postMap.geoObjects.remove(_postMarker);_postMarker=null;}
+}
+
+/* ════ CREATE POST MODAL ════ */
+let _postImgDataUrl=null;
+
+function openCreatePost(){
+  if(!S.loggedIn){go('auth');return;}
+  _postImgDataUrl=null;
+  document.getElementById('post-title').value='';
+  document.getElementById('post-desc').value='';
+  document.getElementById('post-lat').value='';
+  document.getElementById('post-lon').value='';
+  const _cd=document.getElementById('post-coord-display');
+  if(_cd) _cd.style.display='none';
+  // Reset location selector
+  _selectedLocId=null;
+  var lsi=document.getElementById('loc-search-input');if(lsi)lsi.value='';
+  var lsc=document.getElementById('loc-selected-card');if(lsc)lsc.classList.remove('on');
+  var lmd=document.getElementById('loc-map-divider');if(lmd)lmd.style.display='flex';
+  var pmm=document.getElementById('post-minimap');if(pmm)pmm.style.display='block';
+  var lid=document.getElementById('post-loc-id');if(lid)lid.value='';
+  document.getElementById('post-success').classList.remove('on');
+  document.getElementById('post-submit-btn').disabled=false;
+  document.getElementById('post-submit-btn').textContent='Опубликовать';
+  // Reset tags
+  document.querySelectorAll('.create-tag').forEach(t=>t.classList.remove('on'));
+  // Reset image area
+  const area=document.getElementById('img-upload-area');
+  area.classList.remove('has-img');
+  area.innerHTML=`<div class="upload-hint"><strong>Выберите фото</strong>Нажмите, чтобы загрузить</div><div class="img-upload-overlay"><span>Изменить фото</span></div>`;
+  area.onclick=()=>document.getElementById('post-file').click();
+  document.getElementById('create-modal').classList.add('on');
+  document.body.style.overflow='hidden';
+  // Init mini-map after modal is visible
+  setTimeout(initPostMiniMap, 100);
+}
+
+function closeCreatePost(){
+  document.getElementById('create-modal').classList.remove('on');
+  document.body.style.overflow='';
+  if(_postMap){_postMap.destroy();_postMap=null;_postMarker=null;}
+}
+
+function onPostFileChange(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    _postImgDataUrl=e.target.result;
+    const area=document.getElementById('img-upload-area');
+    area.classList.add('has-img');
+    area.innerHTML=`<img src="${_postImgDataUrl}" alt="preview"><div class="img-upload-overlay"><span>Изменить фото</span></div>`;
+    area.onclick=()=>document.getElementById('post-file').click();
+  };
+  reader.readAsDataURL(file);
+  // Reset input so same file can be re-selected
+  input.value='';
+}
+
+function toggleCreateTag(el){el.classList.toggle('on');}
+
+function submitPost(){
+  const title=document.getElementById('post-title').value.trim();
+  const desc=document.getElementById('post-desc').value.trim();
+  const lat=parseFloat(document.getElementById('post-lat').value)||44.7;
+  const lon=parseFloat(document.getElementById('post-lon').value)||38.3;
+  const tags=[...document.querySelectorAll('.create-tag.on')].map(t=>t.dataset.tag);
+
+  if(!title){document.getElementById('post-title').focus();toast('Введите название места');return;}
+  if(!_postImgDataUrl){toast('Добавьте фото');return;}
+
+  const btn=document.getElementById('post-submit-btn');
+  btn.disabled=true;btn.textContent='Публикуется...';
+
+  const userPosts=getUserPosts();
+  const locId=document.getElementById('post-loc-id').value||null;
+  // If known location selected, use its data
+  const knownLoc=locId?LOCATIONS.find(l=>l.id===locId):null;
+  const newPost={
+    id: Date.now(),
+    title: knownLoc?knownLoc.name:title,
+    cat: tags.length?catFromTags(tags):(knownLoc?catFromTags(knownLoc.tags):'nature'),
+    tags: tags.length?tags:(knownLoc?knownLoc.tags:['Природа']),
+    type: knownLoc?knownLoc.typeLabel:'Пост пользователя',
+    author: S.user.name,
+    biz:false,
+    isUserPost:true,
+    userId: S.user.email,
+    locId: locId||null,
+    img: _postImgDataUrl,
+    imgs:[_postImgDataUrl],
+    desc: desc||(knownLoc?knownLoc.desc:title),
+    h:'medium',
+    lat,lon,
+    createdAt: Date.now(),
+  };
+  userPosts.push(newPost);
+  saveUserPosts(userPosts);
+
+  setTimeout(()=>{
+    btn.textContent='Опубликовано';
+    document.getElementById('post-success').classList.add('on');
+    // Refresh full map if open
+    if(document.getElementById('pg-map').classList.contains('on')&&mapObj){
+      buildFullMap();
+    }
+    setTimeout(()=>{
+      closeCreatePost();
+      // Go to feed and show new post
+      go('feed');
+      toast('Пост опубликован');
+    },1200);
+  },800);
+}
+
+function catFromTags(tags){
+  const map={Вино:'wine',Гастро:'gastro',Ферма:'gastro',Природа:'nature',Море:'nature',Горы:'active',Трекинг:'active',Релакс:'wellness',Культура:'culture',Закат:'nature'};
+  for(const t of tags){if(map[t])return map[t];}
+  return 'nature';
+}
+
+/* ════ LOCATION MODAL ════ */
+function openLocModal(locId){
+  const loc=LOCATIONS.find(l=>l.id===locId);
+  if(!loc)return;
+  document.getElementById('lm-img').src=loc.img;
+  document.getElementById('lm-title').textContent=loc.name;
+  document.getElementById('lm-type').textContent=loc.typeLabel;
+  document.getElementById('lm-tags').innerHTML=loc.tags.map(t=>'<span class="pill">'+t+'</span>').join('');
+  document.getElementById('lm-desc').textContent=loc.desc;
+
+  // Posts tied to this location
+  var postsHere=getAllPosts().filter(function(p){return p.locId===locId;});
+  var postsHtml='';
+  if(!postsHere.length){
+    postsHtml='<div class="loc-no-posts">Пока нет публикаций с этой локации.<br>Будь первым — создай пост!</div>';
+  } else {
+    postsHere.forEach(function(p){
+      var isMyPost=p.isUserPost&&S.user&&p.userId===S.user.email;
+      var avSrc=isMyPost&&S.user&&S.user.avatar?S.user.avatar:'https://i.pravatar.cc/32?u='+p.id;
+      var authorName=isMyPost&&S.user?S.user.name:p.author;
+      postsHtml+='<div class="loc-post-row" onclick="closeLocModal();openPost('+p.id+')">'
+        +'<img src="'+p.img+'" alt="'+p.title+'">'
+        +'<div class="loc-post-info">'
+          +'<div class="loc-post-ttl">'+p.title+'</div>'
+          +'<div class="loc-post-auth"><img src="'+avSrc+'" alt="">'+authorName+'</div>'
+        +'</div>'
+      +'</div>';
+    });
+  }
+  document.getElementById('lm-posts').innerHTML=postsHtml;
+
+  document.getElementById('loc-modal').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function closeLocModal(){
+  document.getElementById('loc-modal').classList.remove('on');
+  document.body.style.overflow='';
+}
+
+/* ════ LOCATION SEARCH IN POST FORM ════ */
+var _selectedLocId=null;
+
+function onLocSearch(val){
+  var dd=document.getElementById('loc-dropdown');
+  var q=(val||'').trim().toLowerCase();
+  var results=q.length>0
+    ? LOCATIONS.filter(function(l){return l.name.toLowerCase().includes(q)||l.typeLabel.toLowerCase().includes(q);})
+    : LOCATIONS;
+  if(!results.length){dd.innerHTML='<div style="padding:12px 14px;font-size:.82rem;color:var(--muted)">Ничего не найдено</div>';dd.classList.add('on');return;}
+  dd.innerHTML=results.map(function(l){
+    var c=LOC_COLORS[l.type]||'#C4603B';
+    return '<div class="loc-opt" onclick="selectLoc(\''+l.id+'\')">'
+      +'<div class="loc-type-dot" style="background:'+c+'"></div>'
+      +'<div><div class="loc-opt-name">'+l.name+'</div><div class="loc-opt-type">'+l.typeLabel+'</div></div>'
+      +'</div>';
+  }).join('');
+  dd.classList.add('on');
+}
+
+function selectLoc(locId){
+  var loc=LOCATIONS.find(function(l){return l.id===locId;});
+  if(!loc)return;
+  _selectedLocId=locId;
+  document.getElementById('post-loc-id').value=locId;
+  document.getElementById('loc-search-input').value=loc.name;
+  document.getElementById('loc-dropdown').classList.remove('on');
+  // Show selected card
+  document.getElementById('lsc-img').src=loc.img;
+  document.getElementById('lsc-name').textContent=loc.name;
+  document.getElementById('lsc-type').textContent=loc.typeLabel;
+  document.getElementById('loc-selected-card').classList.add('on');
+  // Hide map section when known location is selected
+  document.getElementById('loc-map-divider').style.display='none';
+  document.getElementById('post-minimap').style.display='none';
+  document.getElementById('post-coord-display').style.display='none';
+  // Set coords from location
+  document.getElementById('post-lat').value=loc.lat;
+  document.getElementById('post-lon').value=loc.lon;
+}
+
+function clearLocSelection(){
+  _selectedLocId=null;
+  document.getElementById('post-loc-id').value='';
+  document.getElementById('loc-search-input').value='';
+  document.getElementById('loc-selected-card').classList.remove('on');
+  document.getElementById('loc-map-divider').style.display='flex';
+  document.getElementById('post-minimap').style.display='block';
+  document.getElementById('post-lat').value='';
+  document.getElementById('post-lon').value='';
+  clearPostCoord();
+}
+
+// Close dropdown on outside click
+document.addEventListener('click',function(e){
+  var dd=document.getElementById('loc-dropdown');
+  if(dd&&!dd.contains(e.target)&&e.target.id!=='loc-search-input'){
+    dd.classList.remove('on');
+  }
+});
+
+/* ════ INIT ════ */
+updateNav();go('landing');
+</script>
+</body>
+</html>

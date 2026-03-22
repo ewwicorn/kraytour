@@ -1,0 +1,9 @@
+.env
+**/__pycache__/
+**/*.pyc
+**/*.pyd
+./.git/
+./test/
+xd.zip
+test_api.sh
+
